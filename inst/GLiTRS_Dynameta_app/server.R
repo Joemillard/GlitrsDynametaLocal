@@ -230,7 +230,7 @@ server <- function(input, output) {
                              validation_test %>% 
                                mutate(row_no = row_number()) %>% 
                                filter(Latitude > 90 | Latitude < -90) %>%
-                               select(row_no), ")"))},
+                               dplyr::select(row_no), ")"))},
         
         if(c("Longitude") %in% colnames(validation_test)){ 
           shiny::need(nrow(validation_test %>% filter(Longitude < 180 & Longitude > -180)) - nrow(validation_test) == 0, 
@@ -239,7 +239,7 @@ server <- function(input, output) {
                              validation_test %>% 
                                mutate(row_no = row_number()) %>% 
                                filter(Longitude > 180 | Longitude < -180) %>%
-                               select(row_no), ")"))
+                               dplyr::select(row_no), ")"))
         },
         
         tryCatch({
@@ -329,14 +329,14 @@ server <- function(input, output) {
                            validation_test %>% 
                              mutate(row_no = row_number()) %>% 
                              filter(Latitude > 90 | Latitude < -90) %>%
-                             select(row_no), ")")),
+                             dplyr::select(row_no), ")")),
         shiny::need(nrow(validation_test %>% filter(Longitude < 180 & Longitude > -180)) - nrow(validation_test) == 0, 
                     paste0("Longitude is out of range ", 
                            "(see row number ",
                            validation_test %>% 
                              mutate(row_no = row_number()) %>% 
                              filter(Longitude > 180 | Longitude < -180) %>%
-                             select(row_no), ")")),
+                             dplyr::select(row_no), ")")),
         
         tryCatch({
           # 7. check that year end and start date are the correct way around, if the arithmetic doesn't work flag likely not numeric
@@ -365,15 +365,19 @@ server <- function(input, output) {
   data <- shiny::reactive({
     
     # Sample data in csv files for current meta-analyses
-    data <- read.csv("data/glitrs_meta_analysis/daero_odonates_pesticide.csv", stringsAsFactors = FALSE)  %>%
+    current_data <- read.csv("../shiny_data/glitrs_meta_analysis/daero_odonates_pesticide.csv", stringsAsFactors = FALSE)  %>%
       mutate(Control_quantity = "") %>%
       mutate(Control_quantity_unit = "") %>%
       rename(Paper_ID = ï..Paper_ID) %>%
-      rbind(read.csv("data/glitrs_meta_analysis/luna_logging.csv", stringsAsFactors = FALSE) %>%
-              rename(Paper_ID = ï..Paper_ID))
+      rbind(read.csv("../shiny_data/glitrs_meta_analysis/luna_logging.csv", stringsAsFactors = FALSE) %>%
+             rename(Paper_ID = ï..Paper_ID))
+    
+    # Sample data in csv files for prior meta-analyses
+   # current_data <- load("shiny_data/current_data.rda")
+    
     
     # set up data_edit object for saving edits and disable save and delete options
-    data_edit <<- data
+    data_edit <<- current_data
     
   })
   
@@ -381,14 +385,17 @@ server <- function(input, output) {
   prior_data <- shiny::reactive({
     
     # Sample data in csv files for prior meta-analyses
-    data <- read.csv("data/prior_meta_analysis/liang_urbanisation_edited.csv", stringsAsFactors = FALSE) %>%
-      rbind(read.csv("data/prior_meta_analysis/nessel_nutrient_enrichment_edited.csv", stringsAsFactors = FALSE) %>%
+    prior_data <- read.csv("../shiny_data/prior_meta_analysis/liang_urbanisation_edited.csv", stringsAsFactors = FALSE) %>%
+      rbind(read.csv("../shiny_data/prior_meta_analysis/nessel_nutrient_enrichment_edited.csv", stringsAsFactors = FALSE) %>%
               rename(Paper_ID = ï..Paper_ID)) %>%
-      rbind(read.csv("data/prior_meta_analysis/wang_water_management_edited.csv", stringsAsFactors = FALSE) %>%
+      rbind(read.csv("../shiny_data/prior_meta_analysis/wang_water_management_edited.csv", stringsAsFactors = FALSE) %>%
               rename(Paper_ID = ï..Paper_ID)) 
     
+    # Sample data in csv files for prior meta-analyses
+   # prior_data <- load("shiny_data/prior_data.rda")
+    
     # set up data_edit object for saving edits and disable save and delete options
-    prior_data_edit <<- data
+    prior_data_edit <<- prior_data
     
   })
   
@@ -784,7 +791,7 @@ server <- function(input, output) {
         
         # remove extra columns from current meta-analyses so will merge on
         custom_model_data_simp <- custom_model_data %>%
-          select(-Treatment_N, -Control_N, -Treatment_mean, -Control_mean, 
+          dplyr::select(-Treatment_N, -Control_N, -Treatment_mean, -Control_mean, 
                  -Treatment_error, -Control_error, -Control_error_type, -Treatment_error_type, -Extracted_from)
         
         # combine in the prior meta-analyses

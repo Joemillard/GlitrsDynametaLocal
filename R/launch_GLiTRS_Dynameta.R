@@ -1,0 +1,22 @@
+#' Launch Dynameta 
+#' 
+#' Launches the Dynameta shiny app 
+#' 
+#' @return Shiny application object
+#' @examples \dontrun{launch_GLiTRS_Dynameta()}
+#' @import shiny
+#' @export
+launch_Dynameta <- function() {
+  
+  # Get app directory - don't include "inst" here as doesn't exist when you install the package from github
+  appDir <- base::system.file("GLiTRS_Dynameta_app", package = "GlitrsDynametaLocal")
+  
+  # To test app before pushing to git:
+  # Load sample data
+  #data(sample_data)
+  # Run app
+  runApp("inst/Dynameta_app/", display.mode = "normal")
+  
+  # Run app
+  #shiny::runApp(appDir, display.mode = "normal")
+}
