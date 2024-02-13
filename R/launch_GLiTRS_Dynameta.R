@@ -15,8 +15,8 @@ launch_Dynameta <- function() {
   # Load sample data
   #data(sample_data)
   # Run app
-  runApp("inst/Dynameta_app/", display.mode = "normal")
+  #runApp("inst/Dynameta_app/", display.mode = "normal")
   
   # Run app
-  #shiny::runApp(appDir, display.mode = "normal")
+  shiny::runApp(appDir, display.mode = "normal")
 }
