@@ -708,7 +708,7 @@ server <- function(input, output) {
                               label = "IUCN Threat:",
                               choices = unique(c(data()$IUCN_threat_category_1, prior_data()$IUCN_threat_category_1)),
                               selected = NULL,
-                              multiple = TRUE) # add actions box for selecting/de-selecting all options
+                              multiple = FALSE) # add actions box for selecting/de-selecting all options
   })
   
   # Make reactive location choices
