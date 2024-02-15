@@ -757,26 +757,30 @@ server <- function(input, output) {
     base::tryCatch(
       expr = {
         
-        # add small value to control and treatment columns
-        custom_model_data$Treatment_mean <- custom_model_data$Treatment_mean + 0.1
-        custom_model_data$Control_mean <- custom_model_data$Control_mean + 0.1
+        if(nrow(custom_model_data) > 0){
         
-        # calculate effect sizes from number, mean, and SD - data needs to be in wide format
-        # Adds yi and vi columns to data
-        custom_model_data <- metafor::escalc(measure = "ROM", # log transformed ratio of means (i.e. log response ratio)
-                                             n1i = custom_model_data$Treatment_N,
-                                             n2i = custom_model_data$Control_N,
-                                             m1i = custom_model_data$Treatment_mean,
-                                             m2i = custom_model_data$Control_mean,
-                                             sd1i = custom_model_data$Treatment_error,
-                                             sd2i = custom_model_data$Control_error,
-                                             slab = paste(Paper_ID), # slab adds study labels which will help when we make forest plot
-                                             data = custom_model_data)
+          # add small value to control and treatment columns
+          custom_model_data$Treatment_mean <- custom_model_data$Treatment_mean + 0.1
+          custom_model_data$Control_mean <- custom_model_data$Control_mean + 0.1
+          
+          # calculate effect sizes from number, mean, and SD - data needs to be in wide format
+          # Adds yi and vi columns to data
+          custom_model_data <- metafor::escalc(measure = "ROM", # log transformed ratio of means (i.e. log response ratio)
+                                               n1i = custom_model_data$Treatment_N,
+                                               n2i = custom_model_data$Control_N,
+                                               m1i = custom_model_data$Treatment_mean,
+                                               m2i = custom_model_data$Control_mean,
+                                               sd1i = custom_model_data$Treatment_error,
+                                               sd2i = custom_model_data$Control_error,
+                                               slab = paste(Paper_ID), # slab adds study labels which will help when we make forest plot
+                                               data = custom_model_data)
+        }
         
         # remove extra columns from current meta-analyses so will merge on
         custom_model_data_simp <- custom_model_data %>%
           dplyr::select(-Treatment_N, -Control_N, -Treatment_mean, -Control_mean, 
-                 -Treatment_error, -Control_error, -Control_error_type, -Treatment_error_type, -Extracted_from)
+                 -Treatment_error, -Control_error, -Control_error_type, -Treatment_error_type, 
+                 -Extracted_from, -URL, -Language, -Database, -Life_history_stage, -Control_quantity, -Control_quantity_unit)
         
         # combine in the prior meta-analyses
         prior_custom_model_data <- prior_custom_model_data %>%
