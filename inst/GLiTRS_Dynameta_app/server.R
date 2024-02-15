@@ -365,7 +365,7 @@ server <- function(input, output) {
   data <- shiny::reactive({
     
     # Sample data in csv files for prior meta-analyses
-    current_data <- readRDS(current_data, "../inst/shiny_data/current_data.rds")
+    current_data <- readRDS("../inst/shiny_data/current_data.rds")
     
     # set up data_edit object for saving edits and disable save and delete options
     data_edit <<- current_data
@@ -376,7 +376,7 @@ server <- function(input, output) {
   prior_data <- shiny::reactive({
 
     # Sample data in csv files for prior meta-analyses
-    prior_data <- readRDS(prior_data, "../inst/shiny_data/prior_data.rds")
+    prior_data <- readRDS("../inst/shiny_data/prior_data.rds")
     
     # set up data_edit object for saving edits and disable save and delete options
     prior_data_edit <<- prior_data
