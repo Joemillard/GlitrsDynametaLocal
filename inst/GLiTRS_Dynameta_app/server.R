@@ -364,17 +364,8 @@ server <- function(input, output) {
   # Create reactive data object
   data <- shiny::reactive({
     
-    # Sample data in csv files for current meta-analyses
-    current_data <- read.csv("../shiny_data/glitrs_meta_analysis/daero_odonates_pesticide.csv", stringsAsFactors = FALSE)  %>%
-      mutate(Control_quantity = "") %>%
-      mutate(Control_quantity_unit = "") %>%
-      rename(Paper_ID = ï..Paper_ID) %>%
-      rbind(read.csv("../shiny_data/glitrs_meta_analysis/luna_logging.csv", stringsAsFactors = FALSE) %>%
-             rename(Paper_ID = ï..Paper_ID))
-    
     # Sample data in csv files for prior meta-analyses
-   # current_data <- load("shiny_data/current_data.rda")
-    
+    current_data <- readRDS(current_data, "../shiny_data/current_data.rds")
     
     # set up data_edit object for saving edits and disable save and delete options
     data_edit <<- current_data
@@ -383,16 +374,9 @@ server <- function(input, output) {
   
   # Create reactive data object
   prior_data <- shiny::reactive({
-    
+
     # Sample data in csv files for prior meta-analyses
-    prior_data <- read.csv("../shiny_data/prior_meta_analysis/liang_urbanisation_edited.csv", stringsAsFactors = FALSE) %>%
-      rbind(read.csv("../shiny_data/prior_meta_analysis/nessel_nutrient_enrichment_edited.csv", stringsAsFactors = FALSE) %>%
-              rename(Paper_ID = ï..Paper_ID)) %>%
-      rbind(read.csv("../shiny_data/prior_meta_analysis/wang_water_management_edited.csv", stringsAsFactors = FALSE) %>%
-              rename(Paper_ID = ï..Paper_ID)) 
-    
-    # Sample data in csv files for prior meta-analyses
-   # prior_data <- load("shiny_data/prior_data.rda")
+    prior_data <- readRDS(prior_data, "../shiny_data/prior_data.rds")
     
     # set up data_edit object for saving edits and disable save and delete options
     prior_data_edit <<- prior_data
