@@ -376,7 +376,8 @@ server <- function(input, output) {
   prior_data <- shiny::reactive({
 
     # Sample data in csv files for prior meta-analyses
-    prior_data <- readRDS("../shiny_data/prior_data.rds")
+    prior_data <- readRDS("../shiny_data/prior_data.rds") %>%
+      mutate(Country = trimws(Country, "both"))
     
     # set up data_edit object for saving edits and disable save and delete options
     prior_data_edit <<- prior_data
