@@ -367,6 +367,29 @@ server <- function(input, output) {
     # Sample data in csv files for prior meta-analyses
     current_data <- readRDS("../shiny_data/current_data.rds")
     
+    # filter out anything with blank errors
+    current_data <- current_data %>%
+      filter(Control_error != "") %>%
+      filter(Treatment_error != "") %>%
+      filter(Treatment_N != "") %>%
+      filter(Control_N != "") %>%
+      filter(!is.na(Control_error_type)) %>%
+      filter(!is.na(Treatment_error_type))
+    
+    # convert the error types to standard deviation in the current meta-analyses
+    current_data$Treatment_error[current_data$Treatment_error_type == "CI95"] <- (current_data$Treatment_error/3.92) * sqrt(current_data$Treatment_N)
+    current_data$Treatment_error[current_data$Treatment_error_type == "Standard error"] <- current_data$Treatment_error * sqrt(current_data$Treatment_N)
+    current_data$Control_error[current_data$Control_error_type == "CI95"] <- (current_data$Control_error/3.92) * sqrt(current_data$Control_N)
+    current_data$Control_error[current_data$Control_error_type == "Standard error"] <- current_data$Control_error
+    
+    # 95% confidence interval is 3.92 standard errors (95CI/3.92)
+    
+    # then convert the strings so they match up with the conversion
+    current_data$Treatment_error_type[current_data$Treatment_error_type == "CI95"] <- "Standard deviation"
+    current_data$Treatment_error_type[current_data$Treatment_error_type == "Standard error"] <- "Standard deviation"
+    current_data$Control_error_type[current_data$Control_error_type == "CI95"] <- "Standard deviation"
+    current_data$Control_error_type[current_data$Control_error_type == "Standard error"] <- "Standard deviation"
+    
     # set up data_edit object for saving edits and disable save and delete options
     data_edit <<- current_data
     
