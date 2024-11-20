@@ -618,12 +618,16 @@ server <- function(input, output) {
     
     # Filter the data to include data points which have long and lat available
     coord_data <- data() %>%
+      mutate(Longitude = as.numeric(Longitude)) %>%
+      mutate(Latitude = as.numeric(Latitude)) %>%
       tidyr::drop_na(Longitude, Latitude) %>%
       dplyr::filter(Longitude != "." & Latitude != ".") %>%
       dplyr::select(Latitude, Longitude, Title, Paper_ID, Observation_ID, IUCN_threat_category_1)
     
     # filter the data to include also prior collected effect sizes
-    prior_coord_data <- prior_data() %>%
+    prior_coord_data <- prior_data() %>%    
+      mutate(Longitude = as.numeric(Longitude)) %>%
+      mutate(Latitude = as.numeric(Latitude)) %>%
       tidyr::drop_na(Longitude, Latitude) %>%
       dplyr::filter(Longitude != "." & Latitude != ".") %>%
       dplyr::select(Latitude, Longitude, Title, Paper_ID, Observation_ID, IUCN_threat_category_1)
