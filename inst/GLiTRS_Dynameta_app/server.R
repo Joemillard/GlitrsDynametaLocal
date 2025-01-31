@@ -367,23 +367,41 @@ server <- function(input, output) {
     # Sample data in csv files for prior meta-analyses
     current_data <- readRDS("../shiny_data/current_data.rds")
     
+    ###### Convert treatment and control errors to numeric (currently character)
+    current_data$Treatment_error <- as.numeric(current_data$Treatment_error)
+    current_data$Control_error <- as.numeric(current_data$Control_error)
+    
     # filter out anything with blank errors
     current_data <- current_data %>%
       filter(Control_error != "") %>%
       filter(Treatment_error != "") %>%
       filter(Treatment_N != "") %>%
       filter(Control_N != "") %>%
-      filter(!is.na(Control_error_type)) %>%
-      filter(!is.na(Treatment_error_type))
+      filter(!is.na(Control_error_type)) %>% # added
+      filter(Control_error_type != "") %>% # added
+      filter(Treatment_error_type != "") %>% # added
+      filter(!is.na(Treatment_error_type)) # added
+    
+    # Mutate treatment error types ci95 and 95% Confidence interval to CI95
+    current_data$Treatment_error_type[current_data$Treatment_error_type == "ci95"] <- "CI95"
+    current_data$Treatment_error_type[current_data$Treatment_error_type == "95% Confidence interval "] <- "CI95"
+    current_data$Treatment_error_type[current_data$Treatment_error_type == "se"] <- "Standard error"
+    current_data$Treatment_error_type[current_data$Treatment_error_type == "Standard error "] <- "Standard error"
+    current_data$Treatment_error_type[current_data$Treatment_error_type == "sd"] <- "Standard deviation"
+    current_data$Control_error_type[current_data$Control_error_type == "ci95"] <- "CI95"
+    current_data$Control_error_type[current_data$Control_error_type == "95% Confidence interval "] <- "CI95"
+    current_data$Control_error_type[current_data$Control_error_type == "se"] <- "Standard error"
+    current_data$Control_error_type[current_data$Control_error_type == "Standard error "] <- "Standard error"
+    current_data$Control_error_type[current_data$Control_error_type == "sd"] <- "Standard deviation"
     
     # convert the error types to standard deviation in the current meta-analyses
-    current_data$Treatment_error[current_data$Treatment_error_type == "CI95"] <- (current_data$Treatment_error/3.92) * sqrt(current_data$Treatment_N)
-    current_data$Treatment_error[current_data$Treatment_error_type == "Standard error"] <- current_data$Treatment_error * sqrt(current_data$Treatment_N)
-    current_data$Control_error[current_data$Control_error_type == "CI95"] <- (current_data$Control_error/3.92) * sqrt(current_data$Control_N)
-    current_data$Control_error[current_data$Control_error_type == "Standard error"] <- current_data$Control_error
-    
+    current_data$Treatment_error[current_data$Treatment_error_type == "CI95"] <- (current_data$Treatment_error[current_data$Treatment_error_type == "CI95"]/3.92) * sqrt(current_data$Treatment_N[current_data$Treatment_error_type == "CI95"])
+    current_data$Treatment_error[current_data$Treatment_error_type == "Standard error"] <- current_data$Treatment_error[current_data$Treatment_error_type == "Standard error"] * sqrt(current_data$Treatment_N[current_data$Treatment_error_type == "Standard error"])
+    current_data$Control_error[current_data$Control_error_type == "CI95"] <- (current_data$Control_error[current_data$Control_error_type == "CI95"]/3.92) * sqrt(current_data$Control_N[current_data$Control_error_type == "CI95"])
+    current_data$Control_error[current_data$Control_error_type == "Standard error"] <- current_data$Control_error[current_data$Control_error_type == "Standard error"] * sqrt(current_data$Control_N[current_data$Control_error_type == "Standard error"])
+
     # 95% confidence interval is 3.92 standard errors (95CI/3.92)
-    
+
     # then convert the strings so they match up with the conversion
     current_data$Treatment_error_type[current_data$Treatment_error_type == "CI95"] <- "Standard deviation"
     current_data$Treatment_error_type[current_data$Treatment_error_type == "Standard error"] <- "Standard deviation"
@@ -444,16 +462,16 @@ server <- function(input, output) {
     
     # Initialise empty data frame
     new_row <- list()
-    
+
     # Calculate statistics for each paper
     for (i in unique(c(data()$IUCN_threat_category_1, prior_data()$IUCN_threat_category_1))) { # data is whole spreadsheet
-      
+
       threat_subset <- data() %>%
         dplyr::filter(IUCN_threat_category_1 %in% i)
-      
+
       prior_threat_subset <- prior_data() %>%
         dplyr::filter(IUCN_threat_category_1 %in% i)
-      
+
       # make new row which will be added to sample_sizes_table
       new_row[[i]] <- base::data.frame(
         "Threat_category" = i,
@@ -461,7 +479,7 @@ server <- function(input, output) {
         "Total_effect_sizes" = nrow(threat_subset) + nrow(prior_threat_subset)
         ) # number of instances
     }
-    
+
     # Put table in alphabetical order based on paper_ID
     sample_sizes_table <- data.table::rbindlist(new_row) %>%
       arrange(Threat_category) %>%
@@ -791,6 +809,9 @@ server <- function(input, output) {
           custom_model_data$Treatment_mean <- custom_model_data$Treatment_mean + 0.1
           custom_model_data$Control_mean <- custom_model_data$Control_mean + 0.1
           
+          custom_model_data <- custom_model_data %>%
+            filter(Treatment_error >= 0 & Control_error >= 0)
+          
           # calculate effect sizes from number, mean, and SD - data needs to be in wide format
           # Adds yi and vi columns to data
           custom_model_data <- metafor::escalc(measure = "ROM", # log transformed ratio of means (i.e. log response ratio)
@@ -815,6 +836,10 @@ server <- function(input, output) {
           rename(yi = Effect_size) %>%
           rename(vi = Sample_variance) %>%
           dplyr::select(-Aggregated, -Sample_variance_type, -Effect_size_type)
+        
+        # # Change column type to numeric (from char)
+        custom_model_data_simp$Treatment_quantity <- as.numeric(custom_model_data_simp$Treatment_quantity)
+        prior_custom_model_data$Search_date <- as.character(prior_custom_model_data$Search_date)
         
         # row bind the current and prior meta-analyses together
         custom_model_data <- dplyr::bind_rows(custom_model_data_simp, prior_custom_model_data)
