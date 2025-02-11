@@ -266,30 +266,37 @@ main_content <- function(){
                       shiny::fluidRow(
                         
                         shiny::column(
-                          3,
+                          2,
                           
                           h4(shiny::uiOutput("reactive_iucn_threat_category"))
                           
                         ),
                         
                         shiny::column(
-                          3,
+                          2,
                           
                           h4(shiny::uiOutput("reactive_location"))
                           
                         ),
                         
                         shiny::column(
-                          3,
+                          2,
                           
                           h4(shiny::uiOutput("reactive_taxa_order"))
                           
                         ),
                         
                         shiny::column(
-                          3,
+                          2,
                           
                           h4(shiny::uiOutput("reactive_biodiversity_metric_category"))
+                          
+                        ),
+                        
+                        shiny::column(
+                          2,
+                          
+                          h4(shiny::uiOutput("reactive_effect_size_category"))
                           
                         )
                         

@@ -769,6 +769,17 @@ server <- function(input, output) {
                               selected = NULL,
                               multiple = TRUE,
                               options = list(`actions-box` = TRUE))
+    
+  })
+    
+    # Make reactive biodiversity metric choices
+    output$reactive_effect_size_category <- shiny::renderUI({
+      shinyWidgets::pickerInput(inputId = "effect_size_category",
+                                label = "Effect size type:",
+                                choices = unique(c(data()$Effect_size_type, prior_data()$Effect_size_type)),
+                                selected = NULL,
+                                multiple = FALSE,
+                                options = list(`actions-box` = TRUE))
   })
   
   # ----------------------------------------------------------------------------------------------------
