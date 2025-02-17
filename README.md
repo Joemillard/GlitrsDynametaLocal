@@ -40,12 +40,12 @@ Once you have Pandoc installed, run the following code (as above):
 install.packages("devtools")
 library(devtools)
 devtools::install_github("Joemillard/GlitrsDynametaLocal", build_vignettes = TRUE) 
-library(Joemillard/GlitrsDynametaLocal)
+library(GlitrsDynametaLocal)
 ```
 If GLiTRS Dynameta installation is unsuccessful, try removing the 'build_vignettes = TRUE' argument from the installation command. 
 
 ### Install GLiTRS Dynameta from source
-Alternatively, you could download the Source code (tar.gz file) from the Dynameta [releases page](https://github.com/Joemillard/GlitrsDynametaLocal/releases). Then run the following code in R/RStudio:
+Alternatively, you could download the Source code (tar.gz file) from the GLiTRS Dynameta [releases page](https://github.com/Joemillard/GlitrsDynametaLocal/releases). Then run the following code in R/RStudio:
 ```
 install.packages(path_to_file, repos = NULL, type = "source") # where path_to_file would represent the full path and file name
 ```
