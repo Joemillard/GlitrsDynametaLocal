@@ -35,14 +35,13 @@ library(remotes)
 Next, install and load the GLiTRS Dynameta package by running the following code in the R console:
 ```
 devtools::install_github("Joemillard/GlitrsDynametaLocal", build_vignettes = TRUE) 
-library(Dynameta)
+library(GlitrsDynametaLocal)
 
 # Or if using remotes, run: 
 remotes::install_github("Joemillard/GlitrsDynametaLocal", build_vignettes = TRUE) 
-library(Dynameta)
+library(GlitrsDynametaLocal)
 ```
 <br> 
-
 ### Installing in R (not RStudio) using devtools
 Installing packages hosted on GitHub uses Pandoc software, which will need to be installed before installing GLiTRS Dynameta (Pandoc comes as standard with RStudio installation). See the documentation [here](https://pandoc.org/installing.html). Pandoc is required to build vignettes. 
 
@@ -56,7 +55,6 @@ library(Joemillard/GlitrsDynametaLocal)
 If GLiTRS Dynameta installation is unsuccessful, try removing the 'build_vignettes = TRUE' argument from the installation command. 
 
 <br>
-
 ### Install GLiTRS Dynameta from source
 Alternatively, you could download the Source code (tar.gz file) from the Dynameta [releases page](https://github.com/Joemillard/GlitrsDynametaLocal/releases). Then run the following code in R/RStudio:
 ```
