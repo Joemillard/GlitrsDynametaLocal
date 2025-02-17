@@ -1,5 +1,11 @@
 # GLiTRS Dynameta
 
+<!-- badges: start -->
+[![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/Joemillard/GlitrsDynametaLocal/blob/master/LICENSE.md)
+<!-- badges: end -->
+
+***
+
 GLiTRS Dynameta is a package for the visualisation of a set of effect sizes corresponding to the effect of anthropogenic activities on insects. GLiTRS Dynameta was developed as part of the [GLiTRS](https://glitrs.ceh.ac.uk/) project, a cross-institutional consortium aiming to build global threat-response models to better understand and predict insect biodiversity change.
 
 Both current (i.e. meta-analyses carried out by a GLiTRS contributor) and prior (i.e. collected from previously published literature) effect sizes can be downloaded from the view effect sizes page. If using the effect sizes, please cite the original Dynameta publication (Skinner et al. 2023) and the Methods publication describing the full effect size database (Millard et al. in review):
