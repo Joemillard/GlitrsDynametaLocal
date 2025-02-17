@@ -1,18 +1,8 @@
 # GLiTRS Dynameta
 
-<br>
-
-GLiTRS Dynameta is a package for the visualisation of a set of effect sizes corresponding to the effect of anthropogenic activities on insects.
-
-<br>
-
-GLiTRS Dynameta was developed as part of the [GLiTRS](https://glitrs.ceh.ac.uk/) project, a cross-institutional consortium aiming to build global threat-response models to better understand and predict insect biodiversity change.
-
-<br>
+GLiTRS Dynameta is a package for the visualisation of a set of effect sizes corresponding to the effect of anthropogenic activities on insects. GLiTRS Dynameta was developed as part of the [GLiTRS](https://glitrs.ceh.ac.uk/) project, a cross-institutional consortium aiming to build global threat-response models to better understand and predict insect biodiversity change.
 
 If you encounter any issues or bugs while installing or using GLiTRS Dynameta, please submit a new issue in the [issue tracker](https://github.com/Joemillard/GlitrsDynametaLocal/issues) with a detailed description of the problem, including steps to reproduce it.
-
-<br>
 
 <a name="installing-and-using-the-glitrs-dynameta-package"></a>
 ## Installing and using the GLiTRS Dynameta package 
@@ -53,8 +43,6 @@ devtools::install_github("Joemillard/GlitrsDynametaLocal", build_vignettes = TRU
 library(Joemillard/GlitrsDynametaLocal)
 ```
 If GLiTRS Dynameta installation is unsuccessful, try removing the 'build_vignettes = TRUE' argument from the installation command. 
-
-<br>
 
 ### Install GLiTRS Dynameta from source
 Alternatively, you could download the Source code (tar.gz file) from the Dynameta [releases page](https://github.com/Joemillard/GlitrsDynametaLocal/releases). Then run the following code in R/RStudio:
