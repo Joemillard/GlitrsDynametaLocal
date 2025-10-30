@@ -1,6 +1,7 @@
 # GLiTRS Dynameta
 
 <!-- badges: start -->
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6354502.svg)](https://doi.org/10.5281/zenodo.16785811) 
 [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/Joemillard/GlitrsDynametaLocal/blob/master/LICENSE.md)
 <!-- badges: end -->
 
