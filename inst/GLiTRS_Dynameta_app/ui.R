@@ -95,13 +95,13 @@ main_content <- function(){
                       
                       p(h5(tags$a(href="https://glitrs.ceh.ac.uk/", "GLiTRS"), "Dynameta is designed for the ingestion and interactive meta-analyses of insect biodiversity effect sizes, oriented around the effect of anthropogenic threats
                   (based on the ", tags$a(href="https://www.iucnredlist.org/resources/threat-classification-scheme", "IUCN threats classification scheme", .noWS = "outside"),
-                           ") on biodiversity. If you encounter any issues or bugs while using GLiTRS Dynameta please raise this with Joe Millard.")),
+                           ") on biodiversity. If you encounter any issues or bugs while using GLiTRS Dynameta, please raise this with Joe Millard.")),
                       
                       p(h5("The platform is split into 5 main pages:")),
                       
                       h5(tags$ol(
                         tags$li("Use this 'Introduction' to explore our current set of meta-analytic data."),
-                        tags$li("Use 'View effect sizes' for the current set of effect sizes in GLiTRS Dynameta, and to make any manual edits if needed."),
+                        tags$li("Use 'View effect sizes' for the current set of effect sizes in GLiTRS Dynameta."),
                         tags$li("Use 'Run meta-analyses' for custom meta-analytic models investigating the effect of anthropogenic threats on insect biodiversity."),
                         tags$li("Use 'Resources' for any documentation on the appropriate approach for carrying out a GLiTRS meta-analysis.")
                         
@@ -164,10 +164,13 @@ main_content <- function(){
                            "")),
                       
                       # Citation
-                      p(h5("For any publications using GLiTRS Dynameta, please cite the original software article as follows: Skinner, G., Cooke, R., Junghyuk, K., Purvis, A., Raw, C., Woodcock, B.A., Millard, J. (2023).
-                       Dynameta: a dynamic platform for ecological meta-analyses in R Shiny. SoftwareX. ", tags$a(href="https://doi.org/10.1016/j.softx.2023.101439", "https://doi.org/10.1016/j.softx.2023.101439")))
-                      
-                      
+                      p(
+                        h5("For any publications using GLiTRS Dynameta, please cite both our original software article and the database publication:"),
+                        h5("- Millard, J., Skinner, G., Bladon, A. J., Cooke, R., Outhwaite, C. L., Rodger, J. G., Barnes, L. A., Isip, J., Keum, J., Raw, C., Wenban-Smith, E., Dicks, L. V., Hui, C., Jones, J. I., Woodcock, B., Isaac, N. J., & Purvis, A. (2025). A Multithreat Meta‐Analytic Database for Understanding Insect Biodiversity Change. Diversity and Distributions. DOI:",
+                        tags$a(href = "https://doi.org/10.1111/ddi.70025", "https://doi.org/10.1111/ddi.70025")),
+                        h5("- Skinner, G., Cooke, R., Junghyuk, K., Purvis, A., Raw, C., Woodcock, B.A., Millard, J. (2023). Dynameta: a dynamic platform for ecological meta-analyses in R Shiny. SoftwareX. DOI:",
+                        tags$a(href = "https://doi.org/10.1016/j.softx.2023.101439", "https://doi.org/10.1016/j.softx.2023.101439"))
+                      )
                       # ----------------------------------------------------------------------------------------------------------------------
                       
       ),
@@ -256,6 +259,8 @@ main_content <- function(){
                       
                       h5("Based on your research question, below you can filter the data by threat, location, taxonomic order, and biodiversity metric. Once you have made your selections, click 'Run custom model'.
                                                         The model will then run in real-time, with the results presented as a forest plot."),
+                      
+                      h5("Note that users should be conscious of the dangers of multiple testing when using GLiTRS Dynameta to run dynamic meta-analyses. Please see our publication in SoftwareX, entitled 'Dynameta: a dynamic platform for ecological meta-analyses in R Shiny', for more details."),
                       
                       tags$br(),
                       

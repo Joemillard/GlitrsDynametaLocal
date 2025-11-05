@@ -1069,13 +1069,13 @@ server <- function(input, output) {
   
   # Add table legend
   output$references_table_legend <- shiny::renderText({
-    paste("Table for all data currently in GLiTRS Dynameta. Click once to select a row and then delete it by selecting 'Delete selected rows'. After making any changes commit these to the database by clicking 'Save changes'. The 'GLiTRS' tab refers to any effect sizes collected under the GLiTRS protocol and 'Prior' refers to any effect sizes collated from previously published meta-analyses.")
+    paste("Table for all data currently in GLiTRS Dynameta. The 'GLiTRS' tab refers to any effect sizes collected under the GLiTRS protocol, and 'Prior' refers to any effect sizes collated from previously published meta-analyses. Please see our publication in Diversity and Distributions, entitled 'A multi-threat meta-analytic database for understanding insect biodiversity change', for more details.")
   })
   
   # Render the references table in the shiny app
   output$references_table <- DT::renderDT({
     
-    datatable(data(), editable = FALSE,  selection = "multiple", options = list(
+    datatable(data(), editable = FALSE,  selection = "none", options = list(
       scrollX = TRUE, # allow scrolling if too wide to fit all columns on one page
       autoWidth = TRUE, # use smart column width handling
       pageLength = 10, # show 5 entries per page
@@ -1089,7 +1089,7 @@ server <- function(input, output) {
   # Render the references table in the shiny app
   output$prior_references_table <- DT::renderDT({
     
-    datatable(prior_data(), editable = FALSE,  selection = "multiple", options = list(
+    datatable(prior_data(), editable = FALSE,  selection = "none", options = list(
        scrollX = TRUE, # allow scrolling if too wide to fit all columns on one page
        autoWidth = TRUE, # use smart column width handling
        pageLength = 10, # show 5 entries per page
