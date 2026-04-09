@@ -73,5 +73,10 @@ Alternatively, you could download the Source code (tar.gz file) from the GLiTRS 
 ```
 install.packages(path_to_file, repos = NULL, type = "source") # where path_to_file would represent the full path and file name
 ```
+### Running GLiTRS Dynameta
+Once you have installed and library'd GlitrsDynametaLocal into your local environment, you can then open the app with the function launch_Dynameta.
+```
+launch_Dynameta()
+```
 
 <br>
