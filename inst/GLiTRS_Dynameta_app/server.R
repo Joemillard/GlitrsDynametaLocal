@@ -809,7 +809,7 @@ server <- function(input, output) {
       dplyr::filter(Country %in% input$location) %>%
       dplyr::filter(Order %in% input$taxa_order) %>%
       dplyr::filter(Biodiversity_metric %in% input$biodiversity_metric_category) %>%
-      dplyr::filter(Effect_size_type %in% input$Effect_size_type)
+      dplyr::filter(Effect_size_type %in% input$effect_size_category)
     
     # Try to run the model on the currently selected subset of data. If doesn't work, tell user to include more data or view error message.
     base::tryCatch(
@@ -842,7 +842,8 @@ server <- function(input, output) {
           dplyr::select(-Treatment_N, -Control_N, -Treatment_mean, -Control_mean, 
                  -Treatment_error, -Control_error, -Control_error_type, -Treatment_error_type, 
                  -Extracted_from, -URL, -Language, -Database, -Life_history_stage, -Control_quantity, -Control_quantity_unit) %>%
-          mutate(Effect_size_type = "LogRR")
+          mutate(Effect_size_type = "LogRR") %>%
+          dplyr::filter(Effect_size_type %in% input$effect_size_category)
         
         # combine in the prior meta-analyses
         prior_custom_model_data <- prior_custom_model_data %>%
