@@ -842,7 +842,8 @@ server <- function(input, output) {
           dplyr::select(-Treatment_N, -Control_N, -Treatment_mean, -Control_mean, 
                  -Treatment_error, -Control_error, -Control_error_type, -Treatment_error_type, 
                  -Extracted_from, -URL, -Language, -Database, -Life_history_stage, -Control_quantity, -Control_quantity_unit) %>%
-          mutate(Effect_size_type = "LogRR")
+          mutate(Effect_size_type = "LogRR") %>%
+          dplyr::filter(Effect_size_type %in% input$effect_size_category)
         
         # combine in the prior meta-analyses
         prior_custom_model_data <- prior_custom_model_data %>%
