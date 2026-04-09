@@ -809,7 +809,7 @@ server <- function(input, output) {
       dplyr::filter(Country %in% input$location) %>%
       dplyr::filter(Order %in% input$taxa_order) %>%
       dplyr::filter(Biodiversity_metric %in% input$biodiversity_metric_category) %>%
-      dplyr::filter(Effect_size_type %in% input$Effect_size_type)
+      dplyr::filter(Effect_size_type %in% input$effect_size_category)
     
     # Try to run the model on the currently selected subset of data. If doesn't work, tell user to include more data or view error message.
     base::tryCatch(
