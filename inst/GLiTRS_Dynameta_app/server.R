@@ -833,7 +833,6 @@ server <- function(input, output) {
                                                m2i = custom_model_data$Control_mean,
                                                sd1i = custom_model_data$Treatment_error,
                                                sd2i = custom_model_data$Control_error,
-                                               slab = paste(Paper_ID), # slab adds study labels which will help when we make forest plot
                                                data = custom_model_data)
         }
         
@@ -927,7 +926,8 @@ server <- function(input, output) {
                               cex = 1.5,
                               col = "#0483A4", # change colour of overall effect size diamond using CEH hero colour
                               mlab = "RE Model for All Studies",
-                              header = "Author(s) and Year")
+                              header = "Author(s) and Year",
+                              slab = paste(Paper_ID)) # slab adds study labels which will help when we make forest plot
     
   })
   
