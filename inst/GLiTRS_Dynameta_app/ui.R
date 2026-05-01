@@ -8,9 +8,17 @@ library(shiny)
 library(shinycssloaders) # for loading symbols (while models run) (withSpinner)
 library(shinydisconnect) # for displaying nice error message if whole shiny app disconnects (disconnectMessage)
 library(shinyjs) # for enabling and disabling download button (useShinyjs hidden)
+library(stringr) # for wrangling text
+library(tm)
+
+meta_analysis_outputs <- readRDS("../shiny_data/meta_analysis_outputs.rds")
+insect_orders <- as.character(unique(meta_analysis_outputs$order)) # for the image view
 
 main_content <- function(){
   shiny::navbarPage(
+    # uiOutput("background"), # this adds a picture background to the public engagement tab.
+    #   IMPORTANT: If this is enabled, the footer on the public engagement tab must also be enabled.
+    #   This is because the images are mostly CC-BY and therefore attribution MUST be given.
     
     # Add custom JavaScript to trigger a click event on a specific tab
     tags$script('
@@ -26,7 +34,7 @@ main_content <- function(){
     # bs_theme for high level theming
     # bs_add_variables for low level theming (a 'theme' is the first argument for this function)
     theme = bslib::bs_add_variables(bslib::bs_theme(
-      version = 4, # there is a bootstrap 5 but it doesn't let me alter the heading font size
+      version = 5, # updated to 5 by RM for popovers
       bg = "#fff",
       fg = "#292C2F",
       primary = "#0483A4",
@@ -424,6 +432,80 @@ main_content <- function(){
       # ===============================================================================================================================
       # ===============================================================================================================================
       
+      shiny::tabPanel("Image view",
+                      
+                      # Title to show at top of tab
+                      p(h4(tags$b("How do human activities affect insects?"))),
+                      
+                      
+                      #tags$br(),
+                      
+                      # The container that gets the background
+                      div(id = "tab-content-area",
+                          
+                          selectInput("chosen_threat",
+                                      label = "Choose a threat:",
+                                      choices = c("2 Agriculture and Aquaculture", "8 Invasive & other problematic species, genes & diseases", "9 Pollution"),
+                                      selected = NULL),
+                          
+                          p(htmlOutput("threat_explanation")),
+                          
+                          p("Click the insects to find out how they are affected by human activities."),
+                          
+                          
+                          fluidRow(
+                            tagList(
+                              lapply(insect_orders, function(insect) {
+                                display_id <- paste0(insect, "_display")
+                                summary_id    <- paste0(insect, "_summary")
+                                # Use the 'insect' string to determine which output to call
+                                conditionalPanel(
+                                  condition = sprintf("output.%s == 'TRUE'", display_id),
+                                  column(2,
+                                         popover(
+                                           tags$div(
+                                             uiOutput(insect),
+                                             tags$div(
+                                               textOutput(paste0(insect, "_name")),
+                                               style = "font-size: 0.8em; font-weight: bold; margin-top: 0px;"
+                                             ),
+                                             style = "width: 135px; height: 135px; display: flex; flex-direction: column; align-items: center; justify-content: center;"
+                                           ),
+                                           tags$div(
+                                             htmlOutput(paste0(insect, "_summary"))
+                                           ),
+                                           tags$div(
+                                             htmlOutput(paste0(insect, "_threat_info"))
+                                           ),
+                                           tags$div(
+                                             htmlOutput(paste0(insect, "_upper"))
+                                           ),
+                                           tags$div(
+                                             htmlOutput(paste0(insect, "_lower"))
+                                           ),
+                                           tags$div(
+                                             htmlOutput(paste0(insect, "_n"))
+                                           ),
+                                           id = paste0("popover_", insect),
+                                           placement = "right"
+                                         )
+                                  )
+                                )
+                              })
+                            )),
+                          
+                          p(tags$a(href="https://www.royensoc.co.uk/understanding-insects/classification-of-insects/", "Click here to find out more about insect Orders", target="_blank")),
+                          p("Please note that this only uses data with logRR errors at the moment, and only considers abundance data.
+                            Please also note that this does not represent the entirety of scientific knowledge, but only what the GLiTRS project has found and synthesised.
+                            Best and worst case scenarios correspond to upper and lower 95% confidence intervals, respectively, calculated automatically by the function metafor::rma.mv"),
+                          
+                      ),
+                      #div(class = "custom-footer", textOutput("attribution"))
+                      #                       )
+                      
+                      
+      ), # close public engagement tab
+      
       # ===============================================================================================================================
       # ===============================================================================================================================
       
@@ -479,7 +561,7 @@ main_content <- function(){
 ui <- fluidPage(
   
   theme = bslib::bs_add_variables(bslib::bs_theme(
-    version = 4, # there is a bootstrap 5 but it doesn't let me alter the heading font size
+    version = 5, # updated to bootstrap 5 by RM in order to use tooltips
     bg = "#fff",
     fg = "#292C2F",
     primary = "#0483A4",
@@ -488,6 +570,10 @@ ui <- fluidPage(
     info = "#34b8c7",
     warning = "#F49633",
     base_font = bslib::font_link(family = "Montserrat",href = "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap"))
+  ),
+  
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "icon-recolor.css")
   ),
   
   shiny::titlePanel(
