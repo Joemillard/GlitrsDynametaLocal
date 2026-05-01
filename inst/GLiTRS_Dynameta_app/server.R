@@ -13,8 +13,13 @@ library(shinyWidgets) # for including a 'select all' option for filters (pickerI
 library(tidyr) # for tidying messy data, part of tidyverse (drop_na)
 library(readr) # for reading in csv files uploaded to the app
 library(mapview) # for downloading the leaflet map
+library(stringr) # for wrangling text
+library(tm) # for removing numbers from text
 
 # ---------------------------------------------------------------------------------------------
+
+# Load outcomes of pre-run meta-analyses to make public engagement view faster
+meta_analysis_outputs <- readRDS("../shiny_data/meta_analysis_outputs.rds")
 
 # ---------------------------------------------------------------------------------------------
 
@@ -1076,6 +1081,236 @@ server <- function(input, output) {
   # ----------------------------------------------------------------------------------------------------------------
   
   # =================================================================================================================
+  
+  # PUBLIC ENGAGEMENT TAB
+  
+  output$background <- renderUI({
+    img_file <- switch(input$chosen_threat,
+                       "2 Agriculture and Aquaculture" = "Evelyn Simak Red tractor Wikimedia 0.65.jpg", # numbers denote transparency (1 = fully transparent), achieved via pasting the image into powerpoint (with image compression turned off) and changing the transparency then saving it
+                       "9 Pollution" = "Welp pollution 0.65.jpg",
+                       "8 Invasive & other problematic species, genes & diseases" = "Galen Parks Smith Kudzu 0.65.jpg")
+    
+    tags$style(HTML(paste0(
+      '#tab-content-area {
+        min-height: 800px; /* Adjust this to the height of your image */
+        background-image: url("', img_file, '");
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center top; 
+        padding-top: 20px; /* Adds space so text doesn\'t touch the top */
+        display: block;
+     }
+     
+     .custom-footer {
+        background: #eee;
+        color: black;
+        padding: 20px;
+        width: 100%;
+     }'
+    )))
+  })
+  
+  output$threat_explanation <- renderText(switch(input$chosen_threat, 
+                                                 "2 Agriculture and Aquaculture" = "The IUCN threat category 
+                                                    '<b>Agriculture and Aquaculture</b>' addresses only the physical 
+                                                    impacts of crops, livestock and aquaculture, with chemical 
+                                                    pollution effects of runoff instead covered under the Pollution                   
+                                                    category. The data presented here are taken from one                          
+                                                    investigation into the effects of livestock on aquatic insects. 
+                                                    Livestock (farmed animals) can disturb the soil, making nearby water muddy.
+                                                    Their faeces also contains high levels of nutrients and
+                                                    potentially contaminants including veterinary drugs, as well as 
+                                                    bacteria, all of which can decrease water quality.",
+                                                 "9 Pollution" = "The IUCN threat category '<b>Pollution</b>' covers the 
+                                                    impacts of water pollution (including from agricultural runoff),  
+                                                    land contamination, garbage/solid waste, air pollution and 
+                                                    sound/light/heat pollution. The data present here are taken from 
+                                                    three investigations into how pollution with nutrients from 
+                                                    fertilisers and burning fossil fuels affect terrestrial insects, 
+                                                    and how pesticide use affects Odonata (dragonflies and damselflies).
+                                                    While pesticides directly impact the health of insects, especially 
+                                                    predators which are eating highly contaminated food, the impacts of
+                                                    nutrients are less clear, depending greatly on context.",
+                                                 "8 Invasive & other problematic species, genes & diseases" = "The IUCN
+                                                    threat category '<b>Invasive & other problematic species, genes & 
+                                                    diseases</b>' covers the effects of invasive non-native species and all 
+                                                    diseases. The data present here are taken from an investigation 
+                                                    into how terrestrial insects are affected by invasive non-native 
+                                                    species. These are species which have been brought by humans to 
+                                                    places where they are not native and are causing damage to nature 
+                                                    or human infrastructure. Invasive non-native species may eat native 
+                                                    species or compete directly with them for food, or they may reduce 
+                                                    the habitat quality in many other ways."))
+  
+  output$attribution <- renderText({img_file <- paste0("Background image: ", switch(input$chosen_threat,
+                                                                                    "2 Agriculture and Aquaculture" = "Evelyn Simak / Red tractor / CC BY-SA 2.0",
+                                                                                    "9 Pollution" = "Welp.sk / Air pollution / CC BY-SA 3.0",
+                                                                                    "8 Invasive & other problematic species, genes & diseases" = "Galen Parks Smith / Kudzu field horz2 / CC BY 2.5"),
+                                                       ". This website was designed by Grace Skinner and Joe Millard. This page was designed by Rosalind Mackey.")})
+  #"The data collection and analysis process is described in the following papers:
+  #\nMillard, J., Skinner, G., Bladon, A. J., Cooke, R., Outhwaite, C. L., Rodger, J. G., Barnes, L. A., Isip, J., Keum, J., Raw, C., Wenban-Smith, E., Dicks, L. V., Hui, C., Jones, J. I., Woodcock, B., Isaac, N. J., & Purvis, A. (2025). A Multithreat Meta‐Analytic Database for Understanding Insect Biodiversity Change. Diversity and Distributions. DOI: https://doi.org/10.1111/ddi.70025
+  #\nSkinner, G., Cooke, R., Junghyuk, K., Purvis, A., Raw, C., Woodcock, B.A., Millard, J. (2023). Dynameta: a dynamic platform for ecological meta-analyses in R Shiny. SoftwareX. DOI: https://doi.org/10.1016/j.softx.2023.101439")})
+  
+  # output$threat_info <- renderText({
+  #   paste("in the presence of ", input$chosen_threat, sep = "")
+  # })
+  
+  insect_orders <- as.character(unique(meta_analysis_outputs$order))
+  
+  observe({
+    lapply(insect_orders, function(insect) {
+      output[[paste0(insect, "_display")]] <- renderText({
+        val <- meta_analysis_outputs$beta[meta_analysis_outputs$threat == input$chosen_threat &
+                                            meta_analysis_outputs$order == insect]
+        
+        # Return "TRUE" or "FALSE" as a string for the conditionalPanel
+        if (length(val) > 0 && !is.na(val)) "TRUE" else "FALSE"
+      })
+      
+      # Crucial for conditionalPanel to work
+      outputOptions(output, paste0(insect, "_display"), suspendWhenHidden = FALSE)
+      
+      output[[insect]] <- renderUI({
+        # Use the 'insect' variable to filter your data
+        if(is.na(meta_analysis_outputs$pval[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat])){
+          chosen_color <- "#ffffff"
+        } else if(meta_analysis_outputs$pval[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat] > 0.05){
+          chosen_color <- "#777777" # excuse the american spelling but this relies on a CSS script that Gemini wrote for me that uses American spellings
+        } else {
+          # Define your limits (adjust these based on your typical max/min beta)
+          limit <- 1
+          meta_analysis_outputs$beta <- as.numeric(meta_analysis_outputs$beta)
+          # Normalize beta to a 0-1 scale for the ramp
+          # This ensures beta = 0 is 0.5 (White), max blue is 1.0, max red is 0.0
+          val_norm <- scales::rescale(meta_analysis_outputs$beta[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat], from = c(-limit, limit), to = c(0, 1))
+          val_norm <- pmin(pmax(val_norm, 0), 1) # Cap at 0 and 1
+          
+          ramp <- colorRamp(c("#dd0000", "#ffffff", "#2222ff"))
+          rgb_val <- ramp(val_norm)
+          
+          # Convert RGB to Hex
+          chosen_color <- rgb(rgb_val[1], rgb_val[2], rgb_val[3], maxColorValue = 255)
+        }
+        
+        tags$div(
+          class = "icon-recolor",
+          style = paste0(
+            "width: 100px; height: 100px; ",
+            "background-color: ", chosen_color, "; ",
+            "-webkit-mask-image: url('", insect, ".svg'); ",
+            "mask-image: url('", insect, ".svg');"
+          )
+        )
+      })
+      
+      threat_info <- switch(input$chosen_threat, 
+                            "2 Agriculture and Aquaculture" = "agriculture/aquaculture",
+                            "9 Pollution" = "pollution",
+                            "8 Invasive & other problematic species, genes & diseases" = "invasive/problematic species, genes and diseases")
+      order_info <- switch(insect, 
+                           "Blattodea" = "cockroaches and termites",
+                           "Coleoptera" = "beetles",
+                           "Dermaptera" = "earwigs",
+                           "Diptera" = "true flies",
+                           "Embioptera" = "webspinners/footspinners",
+                           "Ephemeroptera" = "mayflies",
+                           "Hemiptera" = "true bugs",
+                           "Hymenoptera" = "ants, bees, wasps and sawflies",
+                           "Lepidoptera" = "butterflies and moths",
+                           "Mecoptera" = "scorpionflies",
+                           "Megaloptera" = "alderflies, dobsonflies and fishflies",
+                           "Neuroptera" = "lacewings, mantidflies and antlions",
+                           "Odonata" = "dragonflies and damselflies",
+                           "Orthoptera" = "grasshoppers, locusts and crickets",
+                           "Phasmatodea" = "stick and leaf insects",
+                           "Plecoptera" = "stoneflies",
+                           "Psocoptera" = "lice and barklice",
+                           "Raphidioptera" = "snakeflies",
+                           "Thysanoptera" = "thrips",
+                           "Trichoptera" = "caddisflies",
+                           "Zygentoma" = "silverfish and firebrats")
+      
+      output[[paste0(insect,  "_name")]] <- renderText(paste0(insect))#, " (", order_info, ")"))
+      
+      # make text that says whether the effect is significant and if so gives percentage change
+      output[[paste0(insect, "_summary")]] <- shiny::renderText({
+        if(is.na(meta_analysis_outputs$pval[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat])){
+          paste("No data")
+        } else if(meta_analysis_outputs$pval[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat] < 0.05){
+          percent_raw <- -(100 - (100*exp(as.numeric(meta_analysis_outputs$beta[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat]))))
+          percent <- round(percent_raw, digits = 0) %>%
+            abs()
+          if(percent_raw < 0){
+            paste0("Our studies found <b>", percent, "% fewer</b> ", insect, " (", order_info, ") in sites with ", threat_info)
+          } else {
+            paste0("Our studies found <b>", percent, "% more</b> ", insect, " (", order_info, ") in sites with ", threat_info)
+          }
+        } else {
+          paste0(insect, " (", order_info, ") are not significantly affected by ", threat_info)
+        }
+      })
+      
+      output[[paste0(insect, "_threat_info")]] <- shiny::renderText({
+        threat3 <- meta_analysis_outputs$threat3[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat]
+        if(grepl("/", threat3)){
+          threat3 <- threat3 %>% # select the values for ID.er in each combination
+            str_split(pattern = "\\/") %>% # this separates the two threats at /
+            unlist()# %>% # change it from a list into a vector
+          # unique() %>% # remove duplicates
+          # str_sort() %>% # alphabetise
+          # str_c(collapse = "/")
+        }
+        threat3 <- gsub("&", "and", threat3)
+        threat3 <- removeNumbers(threat3)
+        threat3 <- gsub(".", "", threat3, fixed = TRUE)
+        threat3 <- paste(threat3, collapse = ", and ")
+        paste0("Specific threats investigated: ", threat3)
+      })
+      
+      # make text for upper and lower bounds
+      output[[paste0(insect, "_upper")]] <- shiny::renderText({
+        if(is.na(meta_analysis_outputs$pval[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat])){
+          paste("No data")
+        } else if(meta_analysis_outputs$pval[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat] < 0.05){
+          upper <- as.numeric(meta_analysis_outputs$ci.ub[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat])
+          percent_raw <- -(100 - (100*exp(upper)))
+          percent <- round(percent_raw, digits = 0) %>%
+            abs()
+          if(percent_raw < 0){
+            paste0("Best case scenario: ", percent, "% decrease")
+          } else {
+            paste0("Best case scenario: ", percent, "% increase")
+          }
+          # } else {
+          #   paste()
+        }
+      })
+      
+      output[[paste0(insect, "_lower")]] <- shiny::renderText({
+        if(is.na(meta_analysis_outputs$pval[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat])){
+          paste("No data") # this is left in as a safety fallback
+        } else if(meta_analysis_outputs$pval[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat] < 0.05){
+          lower <- as.numeric(meta_analysis_outputs$ci.lb[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat])
+          percent_raw <- -(100 - (100*exp(lower)))
+          percent <- round(percent_raw, digits = 0) %>%
+            abs()
+          if(percent_raw < 0){
+            paste0("Worst case scenario: ", percent, "% decrease")
+          } else {
+            paste0("Worst case scenario: ", percent, "% increase")
+          }
+        }
+      })
+      
+      output[[paste0(insect, "_n")]] <- shiny::renderText({
+        n_studies <- meta_analysis_outputs$n_studies[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat]
+        n_effect_sizes <- meta_analysis_outputs$n_effect_sizes[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat]
+        paste0("Data consist of ", n_effect_sizes, " effect sizes taken from ", n_studies, " studies")
+      })
+      
+    })
+  })
+  
   # =================================================================================================================
   
   ##### References tab

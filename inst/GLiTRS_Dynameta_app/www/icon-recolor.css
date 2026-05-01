@@ -1,0 +1,13 @@
+.icon-recolor {
+  width: 100px;               /* Change this to your desired width */
+  height: 100px;              /* Change this to your desired height */
+  display: inline-block;      /* Keeps it from taking up the whole line */
+  
+  /* These ensure the SVG stretches to fill the 100x100 box */
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
