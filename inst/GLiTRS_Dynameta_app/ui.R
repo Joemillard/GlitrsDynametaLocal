@@ -16,7 +16,9 @@ insect_orders <- as.character(unique(meta_analysis_outputs$order)) # for the ima
 
 main_content <- function(){
   shiny::navbarPage(
-    # uiOutput("background"),
+    # uiOutput("background"), # this adds a picture background to the public engagement tab.
+    #   IMPORTANT: If this is enabled, the footer on the public engagement tab must also be enabled.
+    #   This is because the images are mostly CC-BY and therefore attribution MUST be given.
     
     # Add custom JavaScript to trigger a click event on a specific tab
     tags$script('
