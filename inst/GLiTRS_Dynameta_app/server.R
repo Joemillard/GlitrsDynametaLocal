@@ -432,15 +432,9 @@ server <- function(input, output) {
   
   # -------------------------------------------------------------------------------------
   
-  # =================================================================================================================
-  # =================================================================================================================
-  
-  ##### Intro tab
-  
-  # =================================================================================================================
-  # =================================================================================================================
-  
-  # ---------------------------------------------------------------------------------------------------------------
+  # ==============================================================
+  # Intro tab and overview in meta-analysis dropdown
+  # ==============================================================
   
   ### Table for overview of papers included
   
@@ -724,365 +718,9 @@ server <- function(input, output) {
     }
   )
   
-  
-  # ---------------------------------------------------------------------------------------------------------------
-  
-  # =================================================================================================================
-  # =================================================================================================================
-  
-  ##### Run models tab
-  
-  # =================================================================================================================
-  # =================================================================================================================
-  
-  # ----------------------------------------------------------------------------------------------------
-  
-  # Make reactive IUCN threat category choices
-  output$reactive_iucn_threat_category <- shiny::renderUI({
-    shinyWidgets::pickerInput(inputId = "iucn_threat_category",
-                              label = "IUCN Threat:",
-                              choices = unique(c(data()$IUCN_threat_category_1, prior_data()$IUCN_threat_category_1)),
-                              selected = NULL,
-                              multiple = FALSE) # add actions box for selecting/de-selecting all options
-  })
-  
-  # Make reactive location choices
-  output$reactive_location <- shiny::renderUI({
-    shinyWidgets::pickerInput(inputId = "location",
-                              label = "Location(s):",
-                              choices = unique(c(data()$Country, prior_data()$Country)),
-                              selected = NULL,
-                              multiple = TRUE,
-                              options = list(`actions-box` = TRUE)) # add actions box for selecting/de-selecting all options
-  })
-  
-  # Make reactive taxa order choices
-  output$reactive_taxa_order <- shiny::renderUI({
-    shinyWidgets::pickerInput(inputId = "taxa_order",
-                              label = "Taxonomic order(s):",
-                              choices = unique(c(data()$Order, prior_data()$Order)),
-                              selected = NULL,
-                              multiple = TRUE,
-                              options = list(`actions-box` = TRUE))
-  })
-  
-  # Make reactive biodiversity metric choices
-  output$reactive_biodiversity_metric_category <- shiny::renderUI({
-    shinyWidgets::pickerInput(inputId = "biodiversity_metric_category",
-                              label = "Biodiversity metric(s):",
-                              choices = unique(c(data()$Biodiversity_metric, prior_data()$Biodiversity_metric)),
-                              selected = NULL,
-                              multiple = TRUE,
-                              options = list(`actions-box` = TRUE))
-    
-  })
-    
-    # Make reactive biodiversity metric choices
-    output$reactive_effect_size_category <- shiny::renderUI({
-      shinyWidgets::pickerInput(inputId = "effect_size_category",
-                                label = "Effect size type:",
-                                choices = unique(c(data()$Effect_size_type, prior_data()$Effect_size_type)),
-                                selected = NULL,
-                                multiple = FALSE,
-                                options = list(`actions-box` = TRUE))
-  })
-  
-  # ----------------------------------------------------------------------------------------------------
-  
-  ### Run model
-  
-  # Filter the data based on user input and run model once the run model button has been pressed
-  custom_model <- shiny::eventReactive(input$run_custom_model, {
-    
-    shiny::validate(
-      shiny::need(input$iucn_threat_category != "", "Please select at least one threat category."),
-      shiny::need(input$location != "", "Please select at least one location."),
-      shiny::need(input$taxa_order != "", "Please select at least one taxonomic order."),
-      shiny::need(input$biodiversity_metric_category != "", "Please select at least one biodiveristy metric category.")
-    )
-    
-    # Filter the data based on the studies the user wants to run the model on
-    custom_model_data <- data() %>%
-      dplyr::filter(IUCN_threat_category_1 %in% input$iucn_threat_category) %>%
-      dplyr::filter(Country %in% input$location) %>%
-      dplyr::filter(Order %in% input$taxa_order) %>%
-      dplyr::filter(Biodiversity_metric %in% input$biodiversity_metric_category)
-    
-    # filter the data also for the prior meta-analysis
-    prior_custom_model_data <- prior_data() %>%
-      dplyr::filter(IUCN_threat_category_1 %in% input$iucn_threat_category) %>%
-      dplyr::filter(Country %in% input$location) %>%
-      dplyr::filter(Order %in% input$taxa_order) %>%
-      dplyr::filter(Biodiversity_metric %in% input$biodiversity_metric_category) %>%
-      dplyr::filter(Effect_size_type %in% input$effect_size_category)
-    
-    # Try to run the model on the currently selected subset of data. If doesn't work, tell user to include more data or view error message.
-    base::tryCatch(
-      expr = {
-        
-        if(nrow(custom_model_data) > 0){
-        
-          # add small fraction of pooled standard deviation for each study to control and treatment columns
-          weighted_sd <- NULL
-          # extract pooled standard deviations
-          for(paper in custom_model_data$Paper_ID){
-            # weighted averages of control and treatment standard deviations, weighted by sample size
-            control_sd <- weighted.mean(custom_model_data$Control_error[custom_model_data$Paper_ID == paper], custom_model_data$Control_N[custom_model_data$Paper_ID == paper])
-            treatment_sd <- weighted.mean(custom_model_data$Treatment_error[custom_model_data$Paper_ID == paper], custom_model_data$Treatment_N[custom_model_data$Paper_ID == paper])
-            # combine them to one final weighted average, divide it by 14, and add it to a vector where each element corresponds to a row of custom_model_data
-            means <- c(control_sd, treatment_sd)
-            N <- c(sum(custom_model_data$Control_N[custom_model_data$Paper_ID == paper]), sum(custom_model_data$Treatment_N[custom_model_data$Paper_ID == paper]))
-            weighted_sd <- c(weighted_sd, (weighted.mean(means, N))/14) 
-              # 14 is the value for which the mean standard deviation of log response ratios for rows containing zeroes originally is closest to the standard deviation of the unadjusted log response ratios for all the rows with no zeroes originally.
-              # In Gemini's words, "We applied an adjustment that prevented the mathematical explosion of variance in zero-count studies, at the cost of a slightly conservative estimate of overall effect size."
-          }
-          # add the column to custom_model_data
-          custom_model_data$weighted_sd <- as.numeric(weighted_sd)
-          
-          # add to the means
-          custom_model_data$Treatment_mean <- custom_model_data$Treatment_mean + custom_model_data$weighted_sd
-          custom_model_data$Control_mean <- custom_model_data$Control_mean + custom_model_data$weighted_sd
-          
-          custom_model_data <- custom_model_data %>%
-            filter(Treatment_error >= 0 & Control_error >= 0)
-          
-          # calculate effect sizes from number, mean, and SD - data needs to be in wide format
-          # Adds yi and vi columns to data
-          custom_model_data <- metafor::escalc(measure = "ROM", # log transformed ratio of means (i.e. log response ratio)
-                                               n1i = custom_model_data$Treatment_N,
-                                               n2i = custom_model_data$Control_N,
-                                               m1i = custom_model_data$Treatment_mean,
-                                               m2i = custom_model_data$Control_mean,
-                                               sd1i = custom_model_data$Treatment_error,
-                                               sd2i = custom_model_data$Control_error,
-                                               data = custom_model_data)
-        }
-        
-        # remove extra columns from current meta-analyses so will merge on
-        custom_model_data_simp <- custom_model_data %>%
-          dplyr::select(-Treatment_N, -Control_N, -Treatment_mean, -Control_mean, 
-                 -Treatment_error, -Control_error, -Control_error_type, -Treatment_error_type, 
-                 -Extracted_from, -URL, -Language, -Database, -Life_history_stage, -Control_quantity, -Control_quantity_unit) %>%
-          mutate(Effect_size_type = "LogRR") %>%
-          dplyr::filter(Effect_size_type %in% input$effect_size_category)
-        
-        # combine in the prior meta-analyses
-        prior_custom_model_data <- prior_custom_model_data %>%
-          rename(yi = Effect_size) %>%
-          rename(vi = Sample_variance) %>%
-          dplyr::select(-Aggregated, -Sample_variance_type)
-        
-        # # Change column type to numeric (from char)
-        custom_model_data_simp$Treatment_quantity <- as.numeric(custom_model_data_simp$Treatment_quantity)
-        prior_custom_model_data$Search_date <- as.character(prior_custom_model_data$Search_date)
-        
-        # row bind the current and prior meta-analyses together
-        custom_model_data <- dplyr::bind_rows(custom_model_data_simp, prior_custom_model_data)
-        
-        # Run metafor model
-        custom_meta_model <- metafor::rma.mv(yi, vi, # effect sizes and corresponding variances
-                                             random = ~ 1 | Paper_ID/Observation_ID, # specify random-effects structure of model
-                                             data = custom_model_data)
-        
-        # If model successfully runs, enable the download results buttons
-        shinyjs::enable("download_custom_model_output")
-        shinyjs::enable("download_custom_model_object")
-        shinyjs::enable("download_forest_plot")
-        
-        ### Assign additional attributes to the model object (so if user downloads the rds model object,
-        ### they would be able to see exactly what they did last time, and repeat it).
-        ### Access attributes with attributes() function
-        
-        # Date and time model ran
-        base::attr(custom_meta_model, "date_and_time") <- base::Sys.time()
-        # Data filters
-        base::attr(custom_meta_model, "data_filters_IUCN_threat") <- c("IUCN threat category: ", input$iucn_threat_category)
-        base::attr(custom_meta_model, "data_filters_locations") <- c("Location(s): ", input$location)
-        base::attr(custom_meta_model, "data_filters_taxonomic_orders") <- c("Taxonomic order(s): ", input$taxa_order)
-        base::attr(custom_meta_model, "data_filters_biodiversity_metric") <- c("Biodiversity_metric: ", input$biodiversity_metric_category)
-        # Session info
-        base::attr(custom_meta_model, "session_info") <- utils::sessionInfo()
-        
-        
-        custom_model <- custom_meta_model
-        
-      }, error = function(e) {
-        
-        # If model does not successfully run, make sure download results buttons are disabled
-        shinyjs::disable("download_custom_model_output")
-        shinyjs::disable("download_custom_model_object")
-        shinyjs::disable("download_forest_plot")
-        
-        # Then stop the process, and return this error message
-        base::stop(shiny::safeError(paste0("This model failed to run. This may be due to insufficient data for this model to run, but please see the R error message: ", e)))
-      })
-    
-  })
-  
-  # ----------------------------------------------------------------------------------------------------
-  
-  # Custom model summary
-  
-  custom_model_summary <- shiny::reactive({
-    
-    shiny::req(custom_model())
-    
-    custom_model_summary <- utils::capture.output(base::summary(custom_model())) # capture.output allows it to be put into a txt file that the user can download
-    
-  })
-  
-  # ---------------------------------------------------------------------------------------------------
-  
-  ### Plotting custom model graph
-  
-  # Make plot a reactive object
-  figure <- reactive({
-    
-    shiny::req(custom_model())
-    
-    figure <- metafor::forest(custom_model(),
-                              xlim = c(-12, 8), # horizontal limits of the plot region
-                              ilab = base::cbind(Treatment), # add in info on treatment used
-                              ilab.xpos = -8, # position treatment labels
-                              order = Treatment, # Order results by treatment
-                              cex = 1.5,
-                              col = "#0483A4", # change colour of overall effect size diamond using CEH hero colour
-                              mlab = "RE Model for All Studies",
-                              header = "Author(s) and Year",
-                              slab = paste(Paper_ID)) # slab adds study labels which will help when we make forest plot
-    
-  })
-  
-  # Render the plot in Dynameta
-  output$custom_model_figure <- shiny::renderPlot({
-    
-    shiny::req(figure())
-    
-    custom_model_figure <- figure()
-    
-  })
-  
-  # Produce figure legend
-  output$custom_model_figure_legend <- shiny::renderText({
-    
-    shiny::req(custom_model())
-    
-    # Convert LRR overall effect size to percentage
-    percentage_change <- round(100 * (exp(stats::coef(custom_model())) - 1), digits = 2)
-    
-    # Calculate confidence interval lower bound in percentage
-    ci_lb <- round(100 * (exp(custom_model()$ci.lb) - 1), digits = 2)
-    
-    # Calculate confidence interval upper bound in percentage
-    ci_ub <- round(100 * (exp(custom_model()$ci.ub) - 1), digits = 2)
-    
-    # Calculate I2 statistic. Code adapted from http://www.metafor-project.org/doku.php/tips:i2_multilevel_multivariate - Multilevel Models section
-    W <- diag(1/custom_model()$vi)
-    X <- metafor::model.matrix.rma(custom_model())
-    P <- W - W %*% X %*% solve(t(X) %*% W %*% X) %*% t(X) %*% W
-    i2 <- round(100 * sum(custom_model()$sigma2) / (sum(custom_model()$sigma2) + (custom_model()$k-custom_model()$p)/sum(diag(P))), digits = 2)
-    
-    # Add these stats to the paste() below.
-    
-    paste("<b>Figure 2. </b>", "Forest plot showing the effect sizes for each data point and the overall effect size of ",
-          paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on insect biodiversity. The overall effect size is indicated by the diamond -
-          the centre of the diamond on the x-axis represents the point estimate,
-          with its width representing the 95% confidence interval. The specific ",
-          paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. <br><br>",
-          "The overall effect size of ", paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on biodiversity for ",
-          paste(shiny::isolate(input$taxa_order), collapse = ", "), " in ", paste(shiny::isolate(input$location), collapse = ", "), " measured with ",
-          paste(shiny::isolate(input$biodiversity_metric_category), collapse = ", "), " as the biodiversity metric is ", round(stats::coef(custom_model()), digits = 2),
-          ". This equates to a percentage change of ", percentage_change, "%", " [", ci_lb, "%, ", ci_ub, "%]. <br><br>",
-          "The", "<i> I² </i>", "statistic for the meta-analysis is ", i2, "%. This describes the percentage of total variance that is due to heterogeneity (variability among studies), and not due to chance. <br><br>",
-          sep = "")
-  })
-  
-  # ----------------------------------------------------------------------------------------------------------------
-  
-  ### Downloading the custom R model output, object, and forest plot
-  
-  # Disable the download buttons on page load - so can't click it until a model has successfully run
-  shinyjs::disable("download_custom_model_output")
-  shinyjs::disable("download_custom_model_object")
-  shinyjs::disable("download_forest_plot")
-  
-  # Disable the download buttons if the iucn_threat_category choice changes
-  observeEvent(input$iucn_threat_category, {
-    shinyjs::disable("download_custom_model_output")
-    shinyjs::disable("download_custom_model_object")
-    shinyjs::disable("download_forest_plot")
-  })
-  
-  # Disable the download buttons if the location choice changes
-  shiny::observeEvent(input$location, {
-    shinyjs::disable("download_custom_model_output")
-    shinyjs::disable("download_custom_model_object")
-    shinyjs::disable("download_forest_plot")
-  })
-  
-  # Disable the download buttons if the taxa_order choice changes
-  shiny::observeEvent(input$taxa_order, {
-    shinyjs::disable("download_custom_model_output")
-    shinyjs::disable("download_custom_model_object")
-    shinyjs::disable("download_forest_plot")
-  })
-  
-  # Disable the download buttons if the biodiversity_metric_category choice changes
-  shiny::observeEvent(input$biodiversity_metric_category, {
-    shinyjs::disable("download_custom_model_output")
-    shinyjs::disable("download_custom_model_object")
-    shinyjs::disable("download_forest_plot")
-  })
-  
-  # Download custom model output (txt file) button
-  output$download_custom_model_output <- shiny::downloadHandler(
-    filename = function() {
-      paste0("custom_model_output", base::Sys.Date(), ".txt", sep="")
-    },
-    content = function(file) {
-      utils::write.table(custom_model_summary(), file)
-    }
-  )
-  
-  # Download custom model object (rds file) button
-  output$download_custom_model_object <- shiny::downloadHandler(
-    filename = function() {
-      paste0("custom_model_object", base::Sys.Date(), ".rds", sep="")
-    },
-    content = function(file) {
-      base::saveRDS(custom_model(), file)
-    }
-  )
-  
-  # Download forest plot button
-  output$download_forest_plot <- shiny::downloadHandler(
-    
-    filename = function() {
-      paste0("forest_plot", base::Sys.Date(), ".png", sep="")
-    },
-    content = function(file) {
-      grDevices::png(file, width = 1500, height = 1000)
-      metafor::forest(custom_model(),
-                      xlim = c(-12, 8), # horizontal limits of the plot region
-                      ilab = base::cbind(Treatment), # add in info on treatment used
-                      ilab.xpos = -8, # position treatment labels
-                      order = Treatment, # Order results by treatment
-                      cex = 1.5,
-                      col = "#0483A4", # change colour of overall effect size diamond using CEH hero colour
-                      mlab = "RE Model for All Studies",
-                      header = "Author(s) and Year")
-      grDevices::dev.off()
-    }
-    
-  )
-  
-  # ******* Add code chunk server1 here for subgroup-analysis *****************************************************************************
-  
-  # ----------------------------------------------------------------------------------------------------------------
-  
-  # =================================================================================================================
-  
-  # PUBLIC ENGAGEMENT TAB
+  # ==============================================================
+  # Public engagement tab
+  # ==============================================================
   
   output$background <- renderUI({
     img_file <- switch(input$chosen_threat,
@@ -1311,12 +949,9 @@ server <- function(input, output) {
     })
   })
   
-  # =================================================================================================================
-  
-  ##### References tab
-  
-  # =================================================================================================================
-  # =================================================================================================================
+  # ==============================================================
+  # View effect sizes tab (within meta-analysis dropdown)
+  # ==============================================================
   
   ### References table
   
@@ -1343,16 +978,16 @@ server <- function(input, output) {
   output$prior_references_table <- DT::renderDT({
     
     datatable(prior_data(), editable = FALSE,  selection = "none", options = list(
-       scrollX = TRUE, # allow scrolling if too wide to fit all columns on one page
-       autoWidth = TRUE, # use smart column width handling
-       pageLength = 10, # show 5 entries per page
-       
-       rownames = FALSE # stops it adding column for row numbers
+      scrollX = TRUE, # allow scrolling if too wide to fit all columns on one page
+      autoWidth = TRUE, # use smart column width handling
+      pageLength = 10, # show 5 entries per page
+      
+      rownames = FALSE # stops it adding column for row numbers
       
     ))
     
   })
-
+  
   
   # Download full data (.csv) button
   output$download_references_table <- shiny::downloadHandler(
@@ -1374,7 +1009,350 @@ server <- function(input, output) {
     }
   )
   
-  # =================================================================================================================
-  # =================================================================================================================
+  
+  # ==============================================================
+  # Run meta-analysis tab (within meta-analysis dropdown)
+  # ==============================================================
+  
+  # Make reactive IUCN threat category choices
+  output$reactive_iucn_threat_category <- shiny::renderUI({
+    shinyWidgets::pickerInput(inputId = "iucn_threat_category",
+                              label = "IUCN Threat:",
+                              choices = unique(c(data()$IUCN_threat_category_1, prior_data()$IUCN_threat_category_1)),
+                              selected = NULL,
+                              multiple = FALSE) # add actions box for selecting/de-selecting all options
+  })
+  
+  # Make reactive location choices
+  output$reactive_location <- shiny::renderUI({
+    shinyWidgets::pickerInput(inputId = "location",
+                              label = "Location(s):",
+                              choices = unique(c(data()$Country, prior_data()$Country)),
+                              selected = NULL,
+                              multiple = TRUE,
+                              options = list(`actions-box` = TRUE)) # add actions box for selecting/de-selecting all options
+  })
+  
+  # Make reactive taxa order choices
+  output$reactive_taxa_order <- shiny::renderUI({
+    shinyWidgets::pickerInput(inputId = "taxa_order",
+                              label = "Taxonomic order(s):",
+                              choices = unique(c(data()$Order, prior_data()$Order)),
+                              selected = NULL,
+                              multiple = TRUE,
+                              options = list(`actions-box` = TRUE))
+  })
+  
+  # Make reactive biodiversity metric choices
+  output$reactive_biodiversity_metric_category <- shiny::renderUI({
+    shinyWidgets::pickerInput(inputId = "biodiversity_metric_category",
+                              label = "Biodiversity metric(s):",
+                              choices = unique(c(data()$Biodiversity_metric, prior_data()$Biodiversity_metric)),
+                              selected = NULL,
+                              multiple = TRUE,
+                              options = list(`actions-box` = TRUE))
+    
+  })
+  
+  # Make reactive biodiversity metric choices
+  output$reactive_effect_size_category <- shiny::renderUI({
+    shinyWidgets::pickerInput(inputId = "effect_size_category",
+                              label = "Effect size type:",
+                              choices = unique(c(data()$Effect_size_type, prior_data()$Effect_size_type)),
+                              selected = NULL,
+                              multiple = FALSE,
+                              options = list(`actions-box` = TRUE))
+  })
+  
+  # ----------------------------------------------------------------------------------------------------
+  
+  ### Run model
+  
+  # Filter the data based on user input and run model once the run model button has been pressed
+  custom_model <- shiny::eventReactive(input$run_custom_model, {
+    
+    shiny::validate(
+      shiny::need(input$iucn_threat_category != "", "Please select at least one threat category."),
+      shiny::need(input$location != "", "Please select at least one location."),
+      shiny::need(input$taxa_order != "", "Please select at least one taxonomic order."),
+      shiny::need(input$biodiversity_metric_category != "", "Please select at least one biodiveristy metric category.")
+    )
+    
+    # Filter the data based on the studies the user wants to run the model on
+    custom_model_data <- data() %>%
+      dplyr::filter(IUCN_threat_category_1 %in% input$iucn_threat_category) %>%
+      dplyr::filter(Country %in% input$location) %>%
+      dplyr::filter(Order %in% input$taxa_order) %>%
+      dplyr::filter(Biodiversity_metric %in% input$biodiversity_metric_category)
+    
+    # filter the data also for the prior meta-analysis
+    prior_custom_model_data <- prior_data() %>%
+      dplyr::filter(IUCN_threat_category_1 %in% input$iucn_threat_category) %>%
+      dplyr::filter(Country %in% input$location) %>%
+      dplyr::filter(Order %in% input$taxa_order) %>%
+      dplyr::filter(Biodiversity_metric %in% input$biodiversity_metric_category) %>%
+      dplyr::filter(Effect_size_type %in% input$effect_size_category)
+    
+    # Try to run the model on the currently selected subset of data. If doesn't work, tell user to include more data or view error message.
+    base::tryCatch(
+      expr = {
+        
+        if(nrow(custom_model_data) > 0){
+          
+          # add small fraction of pooled standard deviation for each study to control and treatment columns
+          weighted_sd <- NULL
+          # extract pooled standard deviations
+          for(paper in custom_model_data$Paper_ID){
+            # weighted averages of control and treatment standard deviations, weighted by sample size
+            control_sd <- weighted.mean(custom_model_data$Control_error[custom_model_data$Paper_ID == paper], custom_model_data$Control_N[custom_model_data$Paper_ID == paper])
+            treatment_sd <- weighted.mean(custom_model_data$Treatment_error[custom_model_data$Paper_ID == paper], custom_model_data$Treatment_N[custom_model_data$Paper_ID == paper])
+            # combine them to one final weighted average, divide it by 14, and add it to a vector where each element corresponds to a row of custom_model_data
+            means <- c(control_sd, treatment_sd)
+            N <- c(sum(custom_model_data$Control_N[custom_model_data$Paper_ID == paper]), sum(custom_model_data$Treatment_N[custom_model_data$Paper_ID == paper]))
+            weighted_sd <- c(weighted_sd, (weighted.mean(means, N))/14) 
+            # 14 is the value for which the mean standard deviation of log response ratios for rows containing zeroes originally is closest to the standard deviation of the unadjusted log response ratios for all the rows with no zeroes originally.
+            # In Gemini's words, "We applied an adjustment that prevented the mathematical explosion of variance in zero-count studies, at the cost of a slightly conservative estimate of overall effect size."
+          }
+          # add the column to custom_model_data
+          custom_model_data$weighted_sd <- as.numeric(weighted_sd)
+          
+          # add to the means
+          custom_model_data$Treatment_mean <- custom_model_data$Treatment_mean + custom_model_data$weighted_sd
+          custom_model_data$Control_mean <- custom_model_data$Control_mean + custom_model_data$weighted_sd
+          
+          custom_model_data <- custom_model_data %>%
+            filter(Treatment_error >= 0 & Control_error >= 0)
+          
+          # calculate effect sizes from number, mean, and SD - data needs to be in wide format
+          # Adds yi and vi columns to data
+          custom_model_data <- metafor::escalc(measure = "ROM", # log transformed ratio of means (i.e. log response ratio)
+                                               n1i = custom_model_data$Treatment_N,
+                                               n2i = custom_model_data$Control_N,
+                                               m1i = custom_model_data$Treatment_mean,
+                                               m2i = custom_model_data$Control_mean,
+                                               sd1i = custom_model_data$Treatment_error,
+                                               sd2i = custom_model_data$Control_error,
+                                               data = custom_model_data)
+        }
+        
+        # remove extra columns from current meta-analyses so will merge on
+        custom_model_data_simp <- custom_model_data %>%
+          dplyr::select(-Treatment_N, -Control_N, -Treatment_mean, -Control_mean, 
+                        -Treatment_error, -Control_error, -Control_error_type, -Treatment_error_type, 
+                        -Extracted_from, -URL, -Language, -Database, -Life_history_stage, -Control_quantity, -Control_quantity_unit) %>%
+          mutate(Effect_size_type = "LogRR") %>%
+          dplyr::filter(Effect_size_type %in% input$effect_size_category)
+        
+        # combine in the prior meta-analyses
+        prior_custom_model_data <- prior_custom_model_data %>%
+          rename(yi = Effect_size) %>%
+          rename(vi = Sample_variance) %>%
+          dplyr::select(-Aggregated, -Sample_variance_type)
+        
+        # # Change column type to numeric (from char)
+        custom_model_data_simp$Treatment_quantity <- as.numeric(custom_model_data_simp$Treatment_quantity)
+        prior_custom_model_data$Search_date <- as.character(prior_custom_model_data$Search_date)
+        
+        # row bind the current and prior meta-analyses together
+        custom_model_data <- dplyr::bind_rows(custom_model_data_simp, prior_custom_model_data)
+        
+        # Run metafor model
+        custom_meta_model <- metafor::rma.mv(yi, vi, # effect sizes and corresponding variances
+                                             random = ~ 1 | Paper_ID/Observation_ID, # specify random-effects structure of model
+                                             data = custom_model_data)
+        
+        # If model successfully runs, enable the download results buttons
+        shinyjs::enable("download_custom_model_output")
+        shinyjs::enable("download_custom_model_object")
+        shinyjs::enable("download_forest_plot")
+        
+        ### Assign additional attributes to the model object (so if user downloads the rds model object,
+        ### they would be able to see exactly what they did last time, and repeat it).
+        ### Access attributes with attributes() function
+        
+        # Date and time model ran
+        base::attr(custom_meta_model, "date_and_time") <- base::Sys.time()
+        # Data filters
+        base::attr(custom_meta_model, "data_filters_IUCN_threat") <- c("IUCN threat category: ", input$iucn_threat_category)
+        base::attr(custom_meta_model, "data_filters_locations") <- c("Location(s): ", input$location)
+        base::attr(custom_meta_model, "data_filters_taxonomic_orders") <- c("Taxonomic order(s): ", input$taxa_order)
+        base::attr(custom_meta_model, "data_filters_biodiversity_metric") <- c("Biodiversity_metric: ", input$biodiversity_metric_category)
+        # Session info
+        base::attr(custom_meta_model, "session_info") <- utils::sessionInfo()
+        
+        
+        custom_model <- custom_meta_model
+        
+      }, error = function(e) {
+        
+        # If model does not successfully run, make sure download results buttons are disabled
+        shinyjs::disable("download_custom_model_output")
+        shinyjs::disable("download_custom_model_object")
+        shinyjs::disable("download_forest_plot")
+        
+        # Then stop the process, and return this error message
+        base::stop(shiny::safeError(paste0("This model failed to run. This may be due to insufficient data for this model to run, but please see the R error message: ", e)))
+      })
+    
+  })
+  
+  # ----------------------------------------------------------------------------------------------------
+  
+  # Custom model summary
+  
+  custom_model_summary <- shiny::reactive({
+    
+    shiny::req(custom_model())
+    
+    custom_model_summary <- utils::capture.output(base::summary(custom_model())) # capture.output allows it to be put into a txt file that the user can download
+    
+  })
+  
+  # ---------------------------------------------------------------------------------------------------
+  
+  ### Plotting custom model graph
+  
+  # Make plot a reactive object
+  figure <- reactive({
+    
+    shiny::req(custom_model())
+    
+    figure <- metafor::forest(custom_model(),
+                              xlim = c(-12, 8), # horizontal limits of the plot region
+                              ilab = base::cbind(Treatment), # add in info on treatment used
+                              ilab.xpos = -8, # position treatment labels
+                              order = Treatment, # Order results by treatment
+                              cex = 1.5,
+                              col = "#0483A4", # change colour of overall effect size diamond using CEH hero colour
+                              mlab = "RE Model for All Studies",
+                              header = "Author(s) and Year",
+                              slab = paste(Paper_ID)) # slab adds study labels which will help when we make forest plot
+    
+  })
+  
+  # Render the plot in Dynameta
+  output$custom_model_figure <- shiny::renderPlot({
+    
+    shiny::req(figure())
+    
+    custom_model_figure <- figure()
+    
+  })
+  
+  # Produce figure legend
+  output$custom_model_figure_legend <- shiny::renderText({
+    
+    shiny::req(custom_model())
+    
+    # Convert LRR overall effect size to percentage
+    percentage_change <- round(100 * (exp(stats::coef(custom_model())) - 1), digits = 2)
+    
+    # Calculate confidence interval lower bound in percentage
+    ci_lb <- round(100 * (exp(custom_model()$ci.lb) - 1), digits = 2)
+    
+    # Calculate confidence interval upper bound in percentage
+    ci_ub <- round(100 * (exp(custom_model()$ci.ub) - 1), digits = 2)
+    
+    # Calculate I2 statistic. Code adapted from http://www.metafor-project.org/doku.php/tips:i2_multilevel_multivariate - Multilevel Models section
+    W <- diag(1/custom_model()$vi)
+    X <- metafor::model.matrix.rma(custom_model())
+    P <- W - W %*% X %*% solve(t(X) %*% W %*% X) %*% t(X) %*% W
+    i2 <- round(100 * sum(custom_model()$sigma2) / (sum(custom_model()$sigma2) + (custom_model()$k-custom_model()$p)/sum(diag(P))), digits = 2)
+    
+    # Add these stats to the paste() below.
+    
+    paste("<b>Figure 2. </b>", "Forest plot showing the effect sizes for each data point and the overall effect size of ",
+          paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on insect biodiversity. The overall effect size is indicated by the diamond -
+          the centre of the diamond on the x-axis represents the point estimate,
+          with its width representing the 95% confidence interval. The specific ",
+          paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. <br><br>",
+          "The overall effect size of ", paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on biodiversity for ",
+          paste(shiny::isolate(input$taxa_order), collapse = ", "), " in ", paste(shiny::isolate(input$location), collapse = ", "), " measured with ",
+          paste(shiny::isolate(input$biodiversity_metric_category), collapse = ", "), " as the biodiversity metric is ", round(stats::coef(custom_model()), digits = 2),
+          ". This equates to a percentage change of ", percentage_change, "%", " [", ci_lb, "%, ", ci_ub, "%]. <br><br>",
+          "The", "<i> I² </i>", "statistic for the meta-analysis is ", i2, "%. This describes the percentage of total variance that is due to heterogeneity (variability among studies), and not due to chance. <br><br>",
+          sep = "")
+  })
+  
+  # ----------------------------------------------------------------------------------------------------------------
+  
+  ### Downloading the custom R model output, object, and forest plot
+  
+  # Disable the download buttons on page load - so can't click it until a model has successfully run
+  shinyjs::disable("download_custom_model_output")
+  shinyjs::disable("download_custom_model_object")
+  shinyjs::disable("download_forest_plot")
+  
+  # Disable the download buttons if the iucn_threat_category choice changes
+  observeEvent(input$iucn_threat_category, {
+    shinyjs::disable("download_custom_model_output")
+    shinyjs::disable("download_custom_model_object")
+    shinyjs::disable("download_forest_plot")
+  })
+  
+  # Disable the download buttons if the location choice changes
+  shiny::observeEvent(input$location, {
+    shinyjs::disable("download_custom_model_output")
+    shinyjs::disable("download_custom_model_object")
+    shinyjs::disable("download_forest_plot")
+  })
+  
+  # Disable the download buttons if the taxa_order choice changes
+  shiny::observeEvent(input$taxa_order, {
+    shinyjs::disable("download_custom_model_output")
+    shinyjs::disable("download_custom_model_object")
+    shinyjs::disable("download_forest_plot")
+  })
+  
+  # Disable the download buttons if the biodiversity_metric_category choice changes
+  shiny::observeEvent(input$biodiversity_metric_category, {
+    shinyjs::disable("download_custom_model_output")
+    shinyjs::disable("download_custom_model_object")
+    shinyjs::disable("download_forest_plot")
+  })
+  
+  # Download custom model output (txt file) button
+  output$download_custom_model_output <- shiny::downloadHandler(
+    filename = function() {
+      paste0("custom_model_output", base::Sys.Date(), ".txt", sep="")
+    },
+    content = function(file) {
+      utils::write.table(custom_model_summary(), file)
+    }
+  )
+  
+  # Download custom model object (rds file) button
+  output$download_custom_model_object <- shiny::downloadHandler(
+    filename = function() {
+      paste0("custom_model_object", base::Sys.Date(), ".rds", sep="")
+    },
+    content = function(file) {
+      base::saveRDS(custom_model(), file)
+    }
+  )
+  
+  # Download forest plot button
+  output$download_forest_plot <- shiny::downloadHandler(
+    
+    filename = function() {
+      paste0("forest_plot", base::Sys.Date(), ".png", sep="")
+    },
+    content = function(file) {
+      grDevices::png(file, width = 1500, height = 1000)
+      metafor::forest(custom_model(),
+                      xlim = c(-12, 8), # horizontal limits of the plot region
+                      ilab = base::cbind(Treatment), # add in info on treatment used
+                      ilab.xpos = -8, # position treatment labels
+                      order = Treatment, # Order results by treatment
+                      cex = 1.5,
+                      col = "#0483A4", # change colour of overall effect size diamond using CEH hero colour
+                      mlab = "RE Model for All Studies",
+                      header = "Author(s) and Year")
+      grDevices::dev.off()
+    }
+    
+  )
+  
+  # ******* Add code chunk server1 here for subgroup-analysis *****************************************************************************
   
 }

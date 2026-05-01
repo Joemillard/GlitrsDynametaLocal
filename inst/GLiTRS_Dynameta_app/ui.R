@@ -60,22 +60,15 @@ main_content <- function(){
                                                 overlayColour = "grey", # Covers the app and draws attention to message
                                                 overlayOpacity = 0.8), # Nearly full opaque
     
-    
-    # ===============================================================================================================================
-    # ===============================================================================================================================
-    
-    
-    # ===============================================================================================================================
-    # ===============================================================================================================================
-    
-    # Intro tab
-    
     # ===============================================================================================================================
     # ===============================================================================================================================
     
     
     tabsetPanel(
       id = "tabs",
+      # ==============================================================
+      # Intro tab
+      # ==============================================================
       shiny::tabPanel("Introduction",
                       useShinyjs(), # set up shinyjs
                       
@@ -108,10 +101,10 @@ main_content <- function(){
                       p(h5("The platform is split into 5 main pages:")),
                       
                       h5(tags$ol(
-                        tags$li("Use this 'Introduction' to explore our current set of meta-analytic data."),
-                        tags$li("Use 'View effect sizes' for the current set of effect sizes in GLiTRS Dynameta."),
-                        tags$li("Use 'Run meta-analyses' for custom meta-analytic models investigating the effect of anthropogenic threats on insect biodiversity."),
-                        tags$li("Use 'Resources' for any documentation on the appropriate approach for carrying out a GLiTRS meta-analysis.")
+                        tags$li("Use this 'Introduction' to familiarise yourself with the site and its layout."),
+                        tags$li("Use 'Summary' to explore our findings in an engaging way."),
+                        tags$li("Use 'Explore data' to access the data behind the project, visualise its geographic distribution, and run custom meta-analytic models investigating the effect of anthropogenic threats on insect biodiversity."),
+                        tags$li("Use 'Read more' for any documentation on the appropriate approach for carrying out a GLiTRS meta-analysis.")
                         
           
                       )),
@@ -124,52 +117,6 @@ main_content <- function(){
                       
                       # ----------------------------------------------------------------------------------------------------------------------
                       
-                      ### Make tables on where data comes from
-                      
-                      p(h4(tags$b("Overview"))),
-                      
-                      tags$hr(),
-                      
-                      shiny::fluidRow(
-                        
-                        shiny::column(
-                          5, # width of this column within the row (each row has to sum to 12 - includes offsets)
-                          
-                          # add table legend for overview table
-                          h5(shiny::htmlOutput("table_legend_overview")),
-                          
-                          # add sample size overview table
-                          h5(shinycssloaders::withSpinner(shiny::tableOutput("sample_sizes_overview"), type = 8)),
-                          
-                          
-                          
-                        ),
-                        
-                        column(
-                          7,
-                          
-                          # Add map of where data comes from
-                          shinycssloaders::withSpinner(leaflet::leafletOutput("map"), type = 8),
-                          
-                          # Add map figure legend
-                          h5(shiny::htmlOutput("map_figure_legend")),
-                          
-                          tags$br(),
-                          
-                          # Add download button for leaflet map
-                          shiny::downloadButton(outputId = "download_map",
-                                                label = "Download map (.png)",
-                                                style='font-size:100%; color: #000; background-color: #eaefec; padding: 8px')
-                          
-                        )
-                      ),
-                      
-                      
-                      
-                      # link to code
-                      p(h5(shiny::icon("github", lib = "font-awesome", "fa-2x"), # add-in github icon
-                           tags$a(href="https://github.com/gls21/Dynameta", "View original Dynameta source code."),
-                           "")),
                       
                       # Citation
                       p(
@@ -183,256 +130,10 @@ main_content <- function(){
                       
       ),
       
-      # ===============================================================================================================================
-      # ===============================================================================================================================
-      
-      # Modelling tab
-      
-      # ===============================================================================================================================
-      # ===============================================================================================================================
-      
-      # References tab
-      
-      # ===============================================================================================================================
-      # ===============================================================================================================================
-      tabPanel("View effect sizes",
-               tags$head(
-                 tags$style(HTML(".dataTables_scrollHead, .dataTables_scrollBody { font-size: 14px; }"))
-               ),
-               
-               # Text to explain what the tab is for
-               p(h4(tags$b("View effect sizes"))),
-               
-               tags$hr(),
-               
-               # Include table legend for references table
-               h5(shiny::htmlOutput("references_table_legend")),
-               
-               tabsetPanel(
-                 
-                 
-                 
-                 tabPanel("GLiTRS", h5(shinycssloaders::withSpinner(DT::DTOutput("references_table"), type = 8))),
-                 tabPanel("Prior", h5(shinycssloaders::withSpinner(DT::DTOutput("prior_references_table"), type = 8)))),
-               
-               tags$br(),
-               
-
-               # Add download button
-               shiny::downloadButton(outputId = "download_references_table",
-                                     label = "Download 'GLiTRS' (.csv)",
-                                     style = 'font-size:100%; color: #000; background-color: #eaefec; padding: 8px'),
-               
-               # Add download button
-               shiny::downloadButton(outputId = "download_prior_references_table",
-                                     label = "Download 'Prior' (.csv)",
-                                     style='font-size:100%; color: #000; background-color: #eaefec; padding: 8px'),
-               
-               tags$br(),
-               tags$br(),
-
-               tags$br(),
-               tags$br()
-               
-      ), # close view data tab
-      
-      shiny::tabPanel("Run meta-analyses",
-                      
-                      # ******* Add code chunk ui1 here for subgroup-analysis *****************************************************************************
-                      
-                      # ----------------------------------------------------------------------------------------------------------------------
-                      
-                      # Title to show at top of tab
-                      p(h4(tags$b("Run meta-analyses"))),
-                      
-                      tags$hr(),
-                      
-                      p(h5("Use this tab to investigate how different anthropogenic threats impact insect biodiversity. These models are multilevel meta-analytic models, run using the ", tags$a(href="https://www.metafor-project.org/doku.php/metafor", "metafor"), " package. They account for the non-independence
-                  of the data by specifying Paper_ID and Observation_ID as nested random effects. The effect size used to compare biodiversity is the log transformed Ratio Of Means (ROM) (also known as the log response ratio),
-                  which quantifies proportionate change between treatments.")),
-                      
-                      # ******* Add code chunk ui2 here for subgroup-analysis *****************************************************************************
-                      
-                      
-                      
-                      # -----------------------------------------------------------------------------------------------------------------------
-                      
-                      # ===========================================================================================================
-                      
-                      ### Running custom models
-                      
-                      # ===========================================================================================================
-                      
-                      # ******* Add code chunk ui3 here for subgroup-analysis *****************************************************************************
-                      
-                      h5("Based on your research question, below you can filter the data by threat, location, taxonomic order, and biodiversity metric. Once you have made your selections, click 'Run custom model'.
-                                                        The model will then run in real-time, with the results presented as a forest plot."),
-                      
-                      h5("Note that users should be conscious of the dangers of multiple testing when using GLiTRS Dynameta to run dynamic meta-analyses. Please see our publication in SoftwareX, entitled 'Dynameta: a dynamic platform for ecological meta-analyses in R Shiny', for more details."),
-                      
-                      tags$br(),
-                      
-                      # --------------------------------------------------------------------------------------------------
-                      
-                      # User inputs on what model to run and a button to run the model
-                      
-                      shiny::fluidRow(
-                        
-                        shiny::column(
-                          2,
-                          
-                          h4(shiny::uiOutput("reactive_iucn_threat_category"))
-                          
-                        ),
-                        
-                        shiny::column(
-                          2,
-                          
-                          h4(shiny::uiOutput("reactive_location"))
-                          
-                        ),
-                        
-                        shiny::column(
-                          2,
-                          
-                          h4(shiny::uiOutput("reactive_taxa_order"))
-                          
-                        ),
-                        
-                        shiny::column(
-                          2,
-                          
-                          h4(shiny::uiOutput("reactive_biodiversity_metric_category"))
-                          
-                        ),
-                        
-                        shiny::column(
-                          2,
-                          
-                          h4(shiny::uiOutput("reactive_effect_size_category"))
-                          
-                        )
-                        
-                      ),
-                      
-                      tags$br(),
-                      
-                      shiny::fluidRow(
-                        
-                        shiny::column(
-                          12,
-                          
-                          # include action button to run model once inputs have been selected
-                          shiny::actionButton("run_custom_model", "Run custom model", style='font-size:125%; color: #000; background-color: #eaefec; padding: 12px')
-                        )
-                        
-                      ),
-                      
-                      tags$br(),
-                      
-                      # --------------------------------------------------------------------------------------------------
-                      
-                      # Graph and table produced based on the custom model run
-                      
-                      shiny::fluidRow(
-                        
-                        shiny::column(
-                          12,
-                          
-                          # This will make the stop error messages grey (rather than red) if the model doesn't run
-                          tags$head(tags$style(".shiny-output-error{color: grey;}")),
-                          
-                          # produce custom model graph
-                          shinycssloaders::withSpinner(shiny::plotOutput("custom_model_figure", width = 1500, height = 1000), type = 8)
-                          
-                        )
-                        
-                      ),
-                      
-                      shiny::fluidRow(
-                        
-                        shiny::column(
-                          12,
-                          
-                          # add custom model figure legend
-                          h5(shiny::htmlOutput("custom_model_figure_legend"))
-                          
-                        )
-                        
-                      ),
-                      
-                      tags$br(),
-                      tags$hr(),
-                      
-                      # --------------------------------------------------------------------------------------------------
-                      
-                      # Add buttons for downloading custom model results
-                      
-                      p(h5("Use this section to download the results.")),
-                      
-                      p(h5(tags$ul(
-                        tags$li("Click 'Download R custom model summary' to download a .txt file containing the output of the summary() function
-                                                                applied to the custom model object. This provides a results summary of the model fitting."),
-                        tags$li("Click 'Download R custom model object' to download a .rds file containing the model object.
-                                                                This has additional attributes attached, which specify the date and time the model was run,
-                                                                the filters that were applied, and the R session information. Once downloaded,
-                                                                use the readRDS() and attributes() functions to load the model object and view its attributes.
-                                                                By downloading, it allows the same analysis to be repeated at a later date (perhaps after more data has become available)."),
-                        tags$li("Click 'Download forest plot' to download a .png file of your forest plot.")
-                      ))),
-                      
-                      shiny::fluidRow(
-                        
-                        shiny::column(
-                          4,
-                          
-                          shinyjs::useShinyjs(), # so can enable and disable the download buttons
-                          
-                          # download button for downloading model output
-                          shiny::downloadButton(outputId = "download_custom_model_output",
-                                                label = "Download R custom model summary",
-                                                style='font-size:125%; color: #000; background-color: #eaefec; padding: 12px')
-                          
-                        ),
-                        
-                        shiny::column(
-                          4,
-                          
-                          shinyjs::useShinyjs(), # so can enable and disable the download buttons
-                          
-                          # download button for downloading model object in rds file
-                          shiny::downloadButton(outputId = "download_custom_model_object",
-                                                label = "Download R custom model object",
-                                                style='font-size:125%; color: #000; background-color: #eaefec; padding: 12px')
-                          
-                        ),
-                        
-                        shiny::column(
-                          4,
-                          
-                          shinyjs::useShinyjs(), # so can enable and disable the download buttons
-                          
-                          # download button for downloading forest plot
-                          shiny::downloadButton(outputId = "download_forest_plot",
-                                                label = "Download forest plot",
-                                                style='font-size:125%; color: #000; background-color: #eaefec; padding: 12px')
-                          
-                        )
-                        
-                      ),
-                      
-                      tags$br(),
-                      tags$br()
-                      
-                      # ******* Add code chunk ui4 here for subgroup-analysis *****************************************************************************
-                      
-      ), # close modelling tab
-      
-      
-      # ===============================================================================================================================
-      # ===============================================================================================================================
-      
-      shiny::tabPanel("Image view",
+      # ==============================================================
+      # Public engagement tab
+      # ==============================================================
+      shiny::tabPanel("Summary",
                       
                       # Title to show at top of tab
                       p(h4(tags$b("How do human activities affect insects?"))),
@@ -474,15 +175,18 @@ main_content <- function(){
                                            tags$div(
                                              htmlOutput(paste0(insect, "_summary"))
                                            ),
+                                           p(""), #line break
                                            tags$div(
                                              htmlOutput(paste0(insect, "_threat_info"))
                                            ),
+                                           p(""),
                                            tags$div(
                                              htmlOutput(paste0(insect, "_upper"))
                                            ),
                                            tags$div(
                                              htmlOutput(paste0(insect, "_lower"))
                                            ),
+                                           p(""),
                                            tags$div(
                                              htmlOutput(paste0(insect, "_n"))
                                            ),
@@ -506,14 +210,298 @@ main_content <- function(){
                       
       ), # close public engagement tab
       
-      # ===============================================================================================================================
-      # ===============================================================================================================================
+      # ==============================================================
+      # Meta-analysis dropdown
+      # ==============================================================
       
+      navbarMenu("Explore data",
+                 shiny::tabPanel("Overview",
+                                 p(h4(tags$b("Overview"))),
+                                 
+                                 tags$hr(),
+                                 
+                                 shiny::fluidRow(
+                                   
+                                   shiny::column(
+                                     5, # width of this column within the row (each row has to sum to 12 - includes offsets)
+                                     
+                                     # add table legend for overview table
+                                     h5(shiny::htmlOutput("table_legend_overview")),
+                                     
+                                     # add sample size overview table
+                                     h5(shinycssloaders::withSpinner(shiny::tableOutput("sample_sizes_overview"), type = 8)),
+                                     
+                                     
+                                     
+                                   ),
+                                   
+                                   column(
+                                     7,
+                                     
+                                     # Add map of where data comes from
+                                     shinycssloaders::withSpinner(leaflet::leafletOutput("map"), type = 8),
+                                     
+                                     # Add map figure legend
+                                     h5(shiny::htmlOutput("map_figure_legend")),
+                                     
+                                     tags$br(),
+                                     
+                                     # Add download button for leaflet map
+                                     shiny::downloadButton(outputId = "download_map",
+                                                           label = "Download map (.png)",
+                                                           style='font-size:125')
+                                     
+                                   )
+                                 ),
+                                 
+                                 
+                                 
+                                 # link to code
+                                 p(h5(shiny::icon("github", lib = "font-awesome", "fa-2x"), # add-in github icon
+                                      tags$a(href="https://github.com/gls21/Dynameta", "View original Dynameta source code."),
+                                      ""))
+                 ),# close overview tab
+                 tabPanel("View effect sizes",
+                          tags$head(
+                            tags$style(HTML(".dataTables_scrollHead, .dataTables_scrollBody { font-size: 14px; }"))
+                          ),
+                          
+                          # Text to explain what the tab is for
+                          p(h4(tags$b("View effect sizes"))),
+                          
+                          tags$hr(),
+                          
+                          # Include table legend for references table
+                          h5(shiny::htmlOutput("references_table_legend")),
+                          
+                          tabsetPanel(
+                            
+                            
+                            
+                            tabPanel("GLiTRS", h5(shinycssloaders::withSpinner(DT::DTOutput("references_table"), type = 8))),
+                            tabPanel("Prior", h5(shinycssloaders::withSpinner(DT::DTOutput("prior_references_table"), type = 8)))),
+                          
+                          tags$br(),
+                          
+                          
+                          # Add download button
+                          shiny::downloadButton(outputId = "download_references_table",
+                                                label = "Download 'GLiTRS' (.csv)",
+                                                style = 'font-size:100%; color: #000; background-color: #eaefec; padding: 8px'),
+                          
+                          # Add download button
+                          shiny::downloadButton(outputId = "download_prior_references_table",
+                                                label = "Download 'Prior' (.csv)",
+                                                style='font-size:100%; color: #000; background-color: #eaefec; padding: 8px'),
+                          
+                          tags$br(),
+                          tags$br(),
+                          
+                          tags$br(),
+                          tags$br()
+                          
+                 ), # close view data tab
+                 shiny::tabPanel("Run meta-analyses",
+                                 
+                                 # ******* Add code chunk ui1 here for subgroup-analysis *****************************************************************************
+                                 
+                                 # ----------------------------------------------------------------------------------------------------------------------
+                                 
+                                 # Title to show at top of tab
+                                 p(h4(tags$b("Run meta-analyses"))),
+                                 
+                                 tags$hr(),
+                                 
+                                 p(h5("Use this tab to investigate how different anthropogenic threats impact insect biodiversity. These models are multilevel meta-analytic models, run using the ", tags$a(href="https://www.metafor-project.org/doku.php/metafor", "metafor"), " package. They account for the non-independence
+                  of the data by specifying Paper_ID and Observation_ID as nested random effects. The effect size used to compare biodiversity is the log transformed Ratio Of Means (ROM) (also known as the log response ratio),
+                  which quantifies proportionate change between treatments.")),
+                                 
+                                 # ******* Add code chunk ui2 here for subgroup-analysis *****************************************************************************
+                                 
+                                 
+                                 
+                                 # -----------------------------------------------------------------------------------------------------------------------
+                                 
+                                 # ===========================================================================================================
+                                 
+                                 ### Running custom models
+                                 
+                                 # ===========================================================================================================
+                                 
+                                 # ******* Add code chunk ui3 here for subgroup-analysis *****************************************************************************
+                                 
+                                 h5("Based on your research question, below you can filter the data by threat, location, taxonomic order, and biodiversity metric. Once you have made your selections, click 'Run custom model'.
+                                                        The model will then run in real-time, with the results presented as a forest plot."),
+                                 
+                                 h5("Note that users should be conscious of the dangers of multiple testing when using GLiTRS Dynameta to run dynamic meta-analyses. Please see our publication in SoftwareX, entitled 'Dynameta: a dynamic platform for ecological meta-analyses in R Shiny', for more details."),
+                                 
+                                 tags$br(),
+                                 
+                                 # --------------------------------------------------------------------------------------------------
+                                 
+                                 # User inputs on what model to run and a button to run the model
+                                 
+                                 shiny::fluidRow(
+                                   
+                                   shiny::column(
+                                     2,
+                                     
+                                     h4(shiny::uiOutput("reactive_iucn_threat_category"))
+                                     
+                                   ),
+                                   
+                                   shiny::column(
+                                     2,
+                                     
+                                     h4(shiny::uiOutput("reactive_location"))
+                                     
+                                   ),
+                                   
+                                   shiny::column(
+                                     2,
+                                     
+                                     h4(shiny::uiOutput("reactive_taxa_order"))
+                                     
+                                   ),
+                                   
+                                   shiny::column(
+                                     2,
+                                     
+                                     h4(shiny::uiOutput("reactive_biodiversity_metric_category"))
+                                     
+                                   ),
+                                   
+                                   shiny::column(
+                                     2,
+                                     
+                                     h4(shiny::uiOutput("reactive_effect_size_category"))
+                                     
+                                   )
+                                   
+                                 ),
+                                 
+                                 tags$br(),
+                                 
+                                 shiny::fluidRow(
+                                   
+                                   shiny::column(
+                                     12,
+                                     
+                                     # include action button to run model once inputs have been selected
+                                     shiny::actionButton("run_custom_model", "Run custom model", style='font-size:125%; color: #000; background-color: #eaefec; padding: 12px')
+                                   )
+                                   
+                                 ),
+                                 
+                                 tags$br(),
+                                 
+                                 # --------------------------------------------------------------------------------------------------
+                                 
+                                 # Graph and table produced based on the custom model run
+                                 
+                                 shiny::fluidRow(
+                                   
+                                   shiny::column(
+                                     12,
+                                     
+                                     # This will make the stop error messages grey (rather than red) if the model doesn't run
+                                     tags$head(tags$style(".shiny-output-error{color: grey;}")),
+                                     
+                                     # produce custom model graph
+                                     shinycssloaders::withSpinner(shiny::plotOutput("custom_model_figure", width = 1500, height = 1000), type = 8)
+                                     
+                                   )
+                                   
+                                 ),
+                                 
+                                 shiny::fluidRow(
+                                   
+                                   shiny::column(
+                                     12,
+                                     
+                                     # add custom model figure legend
+                                     h5(shiny::htmlOutput("custom_model_figure_legend"))
+                                     
+                                   )
+                                   
+                                 ),
+                                 
+                                 tags$br(),
+                                 tags$hr(),
+                                 
+                                 # --------------------------------------------------------------------------------------------------
+                                 
+                                 # Add buttons for downloading custom model results
+                                 
+                                 p(h5("Use this section to download the results.")),
+                                 
+                                 p(h5(tags$ul(
+                                   tags$li("Click 'Download R custom model summary' to download a .txt file containing the output of the summary() function
+                                                                applied to the custom model object. This provides a results summary of the model fitting."),
+                                   tags$li("Click 'Download R custom model object' to download a .rds file containing the model object.
+                                                                This has additional attributes attached, which specify the date and time the model was run,
+                                                                the filters that were applied, and the R session information. Once downloaded,
+                                                                use the readRDS() and attributes() functions to load the model object and view its attributes.
+                                                                By downloading, it allows the same analysis to be repeated at a later date (perhaps after more data has become available)."),
+                                   tags$li("Click 'Download forest plot' to download a .png file of your forest plot.")
+                                 ))),
+                                 
+                                 shiny::fluidRow(
+                                   
+                                   shiny::column(
+                                     4,
+                                     
+                                     shinyjs::useShinyjs(), # so can enable and disable the download buttons
+                                     
+                                     # download button for downloading model output
+                                     shiny::downloadButton(outputId = "download_custom_model_output",
+                                                           label = "Download R custom model summary",
+                                                           style='font-size:125%; color: #000; background-color: #eaefec; padding: 12px')
+                                     
+                                   ),
+                                   
+                                   shiny::column(
+                                     4,
+                                     
+                                     shinyjs::useShinyjs(), # so can enable and disable the download buttons
+                                     
+                                     # download button for downloading model object in rds file
+                                     shiny::downloadButton(outputId = "download_custom_model_object",
+                                                           label = "Download R custom model object",
+                                                           style='font-size:125%; color: #000; background-color: #eaefec; padding: 12px')
+                                     
+                                   ),
+                                   
+                                   shiny::column(
+                                     4,
+                                     
+                                     shinyjs::useShinyjs(), # so can enable and disable the download buttons
+                                     
+                                     # download button for downloading forest plot
+                                     shiny::downloadButton(outputId = "download_forest_plot",
+                                                           label = "Download forest plot",
+                                                           style='font-size:125%; color: #000; background-color: #eaefec; padding: 12px')
+                                     
+                                   )
+                                   
+                                 ),
+                                 
+                                 tags$br(),
+                                 tags$br()
+                                 
+                                 # ******* Add code chunk ui4 here for subgroup-analysis *****************************************************************************
+                                 
+                 ), # close modelling tab
+      ),
+     
+      # ==============================================================
       # Resources tab
-      shiny::tabPanel("Resources",
+      # ==============================================================
+      
+      shiny::tabPanel("Read more",
                       
                       # Text to explain what the tab is for
-                      p(h4(tags$b("Resources"))),
+                      p(h4(tags$b("Read more"))),
                       
                       tags$hr(),
                       
