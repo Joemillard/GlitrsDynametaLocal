@@ -159,7 +159,7 @@ main_content <- function(){
                           # Add download button for leaflet map
                           shiny::downloadButton(outputId = "download_map",
                                                 label = "Download map (.png)",
-                                                style='font-size:125')
+                                                style='font-size:100%; color: #000; background-color: #eaefec; padding: 8px')
                           
                         )
                       ),
@@ -221,12 +221,12 @@ main_content <- function(){
                # Add download button
                shiny::downloadButton(outputId = "download_references_table",
                                      label = "Download 'GLiTRS' (.csv)",
-                                     style='font-size:100%'),
+                                     style = 'font-size:100%; color: #000; background-color: #eaefec; padding: 8px'),
                
                # Add download button
                shiny::downloadButton(outputId = "download_prior_references_table",
                                      label = "Download 'Prior' (.csv)",
-                                     style='font-size:100%'),
+                                     style='font-size:100%; color: #000; background-color: #eaefec; padding: 8px'),
                
                tags$br(),
                tags$br(),
@@ -323,7 +323,7 @@ main_content <- function(){
                           12,
                           
                           # include action button to run model once inputs have been selected
-                          shiny::actionButton("run_custom_model", "Run custom model", style='font-size:125%')
+                          shiny::actionButton("run_custom_model", "Run custom model", style='font-size:125%; color: #000; background-color: #eaefec; padding: 12px')
                         )
                         
                       ),
@@ -391,7 +391,7 @@ main_content <- function(){
                           # download button for downloading model output
                           shiny::downloadButton(outputId = "download_custom_model_output",
                                                 label = "Download R custom model summary",
-                                                style='font-size:125%')
+                                                style='font-size:125%; color: #000; background-color: #eaefec; padding: 12px')
                           
                         ),
                         
@@ -403,7 +403,7 @@ main_content <- function(){
                           # download button for downloading model object in rds file
                           shiny::downloadButton(outputId = "download_custom_model_object",
                                                 label = "Download R custom model object",
-                                                style='font-size:125%')
+                                                style='font-size:125%; color: #000; background-color: #eaefec; padding: 12px')
                           
                         ),
                         
@@ -415,7 +415,7 @@ main_content <- function(){
                           # download button for downloading forest plot
                           shiny::downloadButton(outputId = "download_forest_plot",
                                                 label = "Download forest plot",
-                                                style='font-size:125%')
+                                                style='font-size:125%; color: #000; background-color: #eaefec; padding: 12px')
                           
                         )
                         
