@@ -753,8 +753,8 @@ server <- function(input, output) {
                                                     '<b>Agriculture and Aquaculture</b>' addresses only the physical 
                                                     impacts of crops, livestock and aquaculture, with chemical 
                                                     pollution effects of runoff instead covered under the Pollution                   
-                                                    category. The data presented here are taken from one                          
-                                                    investigation into the effects of livestock on aquatic insects. 
+                                                    category. The data presented here are taken from an                          
+                                                    investigation into <b>the effects of livestock on aquatic insects</b>. 
                                                     Livestock (farmed animals) can disturb the soil, making nearby water muddy.
                                                     Their faeces also contains high levels of nutrients and
                                                     potentially contaminants including veterinary drugs, as well as 
@@ -763,9 +763,9 @@ server <- function(input, output) {
                                                     impacts of water pollution (including from agricultural runoff),  
                                                     land contamination, garbage/solid waste, air pollution and 
                                                     sound/light/heat pollution. The data present here are taken from 
-                                                    three investigations into how pollution with nutrients from 
+                                                    three investigations, into how <b>pollution with nutrients</b> from 
                                                     fertilisers and burning fossil fuels affect terrestrial insects, 
-                                                    and how pesticide use affects Odonata (dragonflies and damselflies).
+                                                    and how <b>pesticide use</b> affects Odonata (dragonflies and damselflies).
                                                     While pesticides directly impact the health of insects, especially 
                                                     predators which are eating highly contaminated food, the impacts of
                                                     nutrients are less clear, depending greatly on context.",
@@ -773,8 +773,8 @@ server <- function(input, output) {
                                                     threat category '<b>Invasive & other problematic species, genes & 
                                                     diseases</b>' covers the effects of invasive non-native species and all 
                                                     diseases. The data present here are taken from an investigation 
-                                                    into how terrestrial insects are affected by invasive non-native 
-                                                    species. These are species which have been brought by humans to 
+                                                    into how terrestrial insects are affected by <b>invasive non-native 
+                                                    species</b>. These are species which have been brought by humans to 
                                                     places where they are not native and are causing damage to nature 
                                                     or human infrastructure. Invasive non-native species may eat native 
                                                     species or compete directly with them for food, or they may reduce 

@@ -94,8 +94,8 @@ main_content <- function(){
                       
                       tags$hr(),
                       
-                      p(h5(tags$a(href="https://glitrs.ceh.ac.uk/", "GLiTRS"), "Dynameta is designed for the ingestion and interactive meta-analyses of insect biodiversity effect sizes, oriented around the effect of anthropogenic threats
-                  (based on the ", tags$a(href="https://www.iucnredlist.org/resources/threat-classification-scheme", "IUCN threats classification scheme", .noWS = "outside"),
+                      p(h5(tags$a(href="https://glitrs.ceh.ac.uk/", "GLiTRS", target = "_blank"), "Dynameta is designed for the ingestion and interactive meta-analyses of insect biodiversity effect sizes, oriented around the effect of anthropogenic threats
+                  (based on the ", tags$a(href="https://www.iucnredlist.org/resources/threat-classification-scheme", "IUCN threats classification scheme", .noWS = "outside", target = "_blank"),
                            ") on biodiversity. If you encounter any issues or bugs while using GLiTRS Dynameta, please raise this with Joe Millard.")),
                       
                       p(h5("The platform is split into 5 main pages:")),
@@ -122,9 +122,9 @@ main_content <- function(){
                       p(
                         h5("For any publications using GLiTRS Dynameta, please cite both our original software article and the database publication:"),
                         h5("- Millard, J., Skinner, G., Bladon, A. J., Cooke, R., Outhwaite, C. L., Rodger, J. G., Barnes, L. A., Isip, J., Keum, J., Raw, C., Wenban-Smith, E., Dicks, L. V., Hui, C., Jones, J. I., Woodcock, B., Isaac, N. J., & Purvis, A. (2025). A Multithreat Meta‐Analytic Database for Understanding Insect Biodiversity Change. Diversity and Distributions. DOI:",
-                        tags$a(href = "https://doi.org/10.1111/ddi.70025", "https://doi.org/10.1111/ddi.70025")),
+                        tags$a(href = "https://doi.org/10.1111/ddi.70025", "https://doi.org/10.1111/ddi.70025", target = "_blank")),
                         h5("- Skinner, G., Cooke, R., Junghyuk, K., Purvis, A., Raw, C., Woodcock, B.A., Millard, J. (2023). Dynameta: a dynamic platform for ecological meta-analyses in R Shiny. SoftwareX. DOI:",
-                        tags$a(href = "https://doi.org/10.1016/j.softx.2023.101439", "https://doi.org/10.1016/j.softx.2023.101439"))
+                        tags$a(href = "https://doi.org/10.1016/j.softx.2023.101439", "https://doi.org/10.1016/j.softx.2023.101439", target = "_blank"))
                       )
                       # ----------------------------------------------------------------------------------------------------------------------
                       
@@ -199,7 +199,7 @@ main_content <- function(){
                             )),
                           
                           p(tags$a(href="https://www.royensoc.co.uk/understanding-insects/classification-of-insects/", "Click here to find out more about insect Orders", target="_blank")),
-                          p("Please note that this only uses data with logRR errors at the moment, and only considers abundance data.
+                          p("Please note that this only uses abundance data with logRR errors at the moment, and only considers abundance data.
                             Please also note that this does not represent the entirety of scientific knowledge, but only what the GLiTRS project has found and synthesised.
                             Best and worst case scenarios correspond to upper and lower 95% confidence intervals, respectively, calculated automatically by the function metafor::rma.mv"),
                           
@@ -258,7 +258,7 @@ main_content <- function(){
                                  
                                  # link to code
                                  p(h5(shiny::icon("github", lib = "font-awesome", "fa-2x"), # add-in github icon
-                                      tags$a(href="https://github.com/gls21/Dynameta", "View original Dynameta source code."),
+                                      tags$a(href="https://github.com/gls21/Dynameta", "View original Dynameta source code.", target = "_blank"),
                                       ""))
                  ),# close overview tab
                  tabPanel("View effect sizes",
@@ -312,7 +312,7 @@ main_content <- function(){
                                  
                                  tags$hr(),
                                  
-                                 p(h5("Use this tab to investigate how different anthropogenic threats impact insect biodiversity. These models are multilevel meta-analytic models, run using the ", tags$a(href="https://www.metafor-project.org/doku.php/metafor", "metafor"), " package. They account for the non-independence
+                                 p(h5("Use this tab to investigate how different anthropogenic threats impact insect biodiversity. These models are multilevel meta-analytic models, run using the ", tags$a(href="https://www.metafor-project.org/doku.php/metafor", "metafor", target = "_blank"), " package. They account for the non-independence
                   of the data by specifying Paper_ID and Observation_ID as nested random effects. The effect size used to compare biodiversity is the log transformed Ratio Of Means (ROM) (also known as the log response ratio),
                   which quantifies proportionate change between treatments.")),
                                  
@@ -333,7 +333,7 @@ main_content <- function(){
                                  h5("Based on your research question, below you can filter the data by threat, location, taxonomic order, and biodiversity metric. Once you have made your selections, click 'Run custom model'.
                                                         The model will then run in real-time, with the results presented as a forest plot."),
                                  
-                                 h5("Note that users should be conscious of the dangers of multiple testing when using GLiTRS Dynameta to run dynamic meta-analyses. Please see our publication in SoftwareX, entitled 'Dynameta: a dynamic platform for ecological meta-analyses in R Shiny', for more details."),
+                                 h5("Note that users should be conscious of the dangers of multiple testing, as described ", tags$a(href="https://drmattg.github.io/Uncertain_Ecologist/Dynamic_Meta_analysis.html", "here", target = "_blank"), " by Dr Matthew J Grainger (who is unaffiliated with this project), when using GLiTRS Dynameta to run dynamic meta-analyses. Please see our publication in SoftwareX, entitled 'Dynameta: a dynamic platform for ecological meta-analyses in R Shiny', for more details."),
                                  
                                  tags$br(),
                                  
@@ -505,32 +505,32 @@ main_content <- function(){
                       
                       tags$hr(),
                       
-                      p(h5("First, it's important that our meta-analyses are carried out in line with our protocol, preregistered on the Open Science Framework (OSF)", tags$a(href="https://osf.io/mw7xq/?view_only=", "here"), ". In the OSF project you'll find the following: 1) a detailed guidance document; 2) a skeleton spreadheet to complete; 3) a skeleton protocol to complete; 4) a spot check spreadsheet to complete; and 5) a set of prior contributor protocols.")),
+                      p(h5("First, it's important that our meta-analyses are carried out in line with our protocol, preregistered on the Open Science Framework (OSF)", tags$a(href="https://osf.io/mw7xq/?view_only=", "here", target = "_blank"), ". In the OSF project you'll find the following: 1) a detailed guidance document; 2) a skeleton spreadheet to complete; 3) a skeleton protocol to complete; 4) a spot check spreadsheet to complete; and 5) a set of prior contributor protocols.")),
                       
                       
                       p(h5("Please refer to and follow the guidance developed by communities of practice
                        when conducting evidence syntheses:",
                            tags$ul(
-                             tags$li(tags$a(href="https://environmentalevidence.org/", "Collaboration for Environmental Evidence (CEE)"),
+                             tags$li(tags$a(href="https://environmentalevidence.org/", "Collaboration for Environmental Evidence (CEE)", target = "_blank"),
                                      " - For conducting environmental evidence syntheses. See ",
-                                     tags$a(href="https://environmentalevidence.org/information-for-authors", "here"),
+                                     tags$a(href="https://environmentalevidence.org/information-for-authors", "here", target = "_blank"),
                                      "for full guidance document."),
-                             tags$li(tags$a(href="http://www.prisma-statement.org/", "PRISMA"),
+                             tags$li(tags$a(href="http://www.prisma-statement.org/", "PRISMA", target = "_blank"),
                                      " - For reporting systematic reviews and meta-analysis
                                 (developed for medical field but see ecology specific version below)."),
-                             tags$li(tags$a(href="http://www.prisma-statement.org/Extensions/EcoEvo", "PRISMA Extension for Ecology and Evolution")),
-                             tags$li(tags$a(href="https://www.roses-reporting.com/", "ROSES"),
+                             tags$li(tags$a(href="https://www.prisma-statement.org/ecoevo", "PRISMA Extension for Ecology and Evolution", target = "_blank")),
+                             tags$li(tags$a(href="https://www.roses-reporting.com/", "ROSES", target = "_blank"),
                                      " - For reporting systematic reviews and meta-analysis (developed for environmental research)."),
-                             tags$li(tags$a(href="https://training.cochrane.org/handbook/current", "Cochrane Handbook for Systematic Reviews of Interventions"),
+                             tags$li(tags$a(href="https://training.cochrane.org/handbook/current", "Cochrane Handbook for Systematic Reviews of Interventions", target = "_blank"),
                                      " - For conducting systematic reviews (developed for medical field)."),
-                             tags$li(tags$a(href="https://www.campbellcollaboration.org/research-resources/training-courses.html", "Campbell Collaboration"),
+                             tags$li(tags$a(href="https://www.campbellcollaboration.org/research-resources/training-courses.html", "Campbell Collaboration", target = "_blank"),
                                      " - For conducting evidence syntheses (developed for social sciences field).")
                            ))),
                       
                       p(h5("The following are useful guides for conducting meta-analyses:",
                            tags$ul(
-                             tags$li(tags$a(href="https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/", "Doing Meta-Analysis with R: A Hands-On Guide")),
-                             tags$li(tags$a(href="http://www.metafor-project.org/doku.php/tips", "The metafor package tips and notes"))
+                             tags$li(tags$a(href="https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/", "Doing Meta-Analysis with R: A Hands-On Guide", target = "_blank")),
+                             tags$li(tags$a(href="http://www.metafor-project.org/doku.php/tips", "The metafor package tips and notes", target = "_blank"))
                            ))),
                       
                       tags$br()
