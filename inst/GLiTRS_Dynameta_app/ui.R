@@ -220,6 +220,24 @@ main_content <- function(){
                                  
                                  tags$hr(),
                                  
+                                 h5(p("Disclaimer")),
+                                 
+                                 p("Due to the limited amount of data in the GLiTRS Dynameta database 
+                                   at this time, and the risk of multiple testing issues, this tool 
+                                   is best used for hypothesis generation rather than meta-analysis 
+                                   for publication at this time. If the results are to be published 
+                                   as they stand, it is very important to formulate, and ideally 
+                                   pre-register, the research question prior to interacting with the 
+                                   dynamic meta-analysis tool, to avoid (founded or unfounded) 
+                                   accusations of p-hacking (i.e. manipulating the search strings 
+                                   until results meet expectations and/or statistical significance). 
+                                   On the contrary, if the results are used only for hypothesis 
+                                   generation, p-hacking is entirely valid as long as it is declared 
+                                   as such (i.e. 'We searched for trends within the GLiTRS Dyameta 
+                                   database, to identify fields in which further study might be fruitful')."),
+                                 
+                                 h5(p("The GLiTRS Dynameta data")),
+                                 
                                  shiny::fluidRow(
                                    
                                    shiny::column(
@@ -249,7 +267,7 @@ main_content <- function(){
                                      # Add download button for leaflet map
                                      shiny::downloadButton(outputId = "download_map",
                                                            label = "Download map (.png)",
-                                                           style='font-size:125')
+                                                           style='font-size:125%; color: #000; background-color: #eaefec; padding: 12px')
                                      
                                    )
                                  ),
@@ -524,7 +542,9 @@ main_content <- function(){
                              tags$li(tags$a(href="https://training.cochrane.org/handbook/current", "Cochrane Handbook for Systematic Reviews of Interventions", target = "_blank"),
                                      " - For conducting systematic reviews (developed for medical field)."),
                              tags$li(tags$a(href="https://www.campbellcollaboration.org/research-resources/training-courses.html", "Campbell Collaboration", target = "_blank"),
-                                     " - For conducting evidence syntheses (developed for social sciences field).")
+                                     " - For conducting evidence syntheses (developed for social sciences field)."),
+                             tags$li(tags$a(href = "https://drmattg.github.io/Uncertain_Ecologist/Dynamic_Meta_analysis.html", "Dynamic Meta-analysis: When Transparency Meets Multiplicity by Dr Matthew J Grainger", target = "_blank"),
+                                     " - Blog on the dangers of multiple testing in dynamic meta-analysis.")
                            ))),
                       
                       p(h5("The following are useful guides for conducting meta-analyses:",
