@@ -20,6 +20,8 @@ library(tm) # for removing numbers from text
 
 # Load outcomes of pre-run meta-analyses to make public engagement view faster
 meta_analysis_outputs <- readRDS("../shiny_data/meta_analysis_outputs.rds")
+all_orders_meta_analysis_outputs <- readRDS("../shiny_data/all_orders_meta_analysis_outputs.rds")
+
 
 # ---------------------------------------------------------------------------------------------
 
@@ -763,8 +765,8 @@ server <- function(input, output) {
                                                     impacts of water pollution (including from agricultural runoff),  
                                                     land contamination, garbage/solid waste, air pollution and 
                                                     sound/light/heat pollution. The data present here are taken from 
-                                                    three investigations, into how <b>pollution with nutrients</b> from 
-                                                    fertilisers and burning fossil fuels affect terrestrial insects, 
+                                                    three investigations, into how pollution with <b>nutrients from 
+                                                    fertilisers and burning fossil fuels</b> affect terrestrial insects, 
                                                     and how <b>pesticide use</b> affects Odonata (dragonflies and damselflies).
                                                     While pesticides directly impact the health of insects, especially 
                                                     predators which are eating highly contaminated food, the impacts of
@@ -792,6 +794,28 @@ server <- function(input, output) {
   # output$threat_info <- renderText({
   #   paste("in the presence of ", input$chosen_threat, sep = "")
   # })
+  
+  output$overall_effect <- shiny::renderText({
+    if(is.na(all_orders_meta_analysis_outputs$pval[all_orders_meta_analysis_outputs$threat == input$chosen_threat])){
+      paste("Overall effect on insects: No data")
+    } else if(all_orders_meta_analysis_outputs$pval[all_orders_meta_analysis_outputs$threat == input$chosen_threat] < 0.05){
+      threat_info <- switch(input$chosen_threat, 
+                            "2 Agriculture and Aquaculture" = "agriculture/aquaculture",
+                            "9 Pollution" = "pollution",
+                            "8 Invasive & other problematic species, genes & diseases" = "invasive/problematic species, genes and diseases")
+      percent_raw <- -(100 - (100*exp(as.numeric(all_orders_meta_analysis_outputs$beta[all_orders_meta_analysis_outputs$threat == input$chosen_threat]))))
+      percent <- round(percent_raw, digits = 0) %>%
+        abs()
+      if(percent_raw < 0){
+        paste0("Overall effect on insects: <b>", percent, "% fewer insects</b> in sites with ", threat_info)
+      } else {
+        paste0("Overall effect on insects: <b>", percent, "% more insects</b> in sites with ", threat_info)
+      }
+    } else {
+      paste0("Overall effect on insects: No effect")
+    }
+  })
+  
   
   insect_orders <- as.character(unique(meta_analysis_outputs$order))
   

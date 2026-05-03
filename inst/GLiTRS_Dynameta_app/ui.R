@@ -151,7 +151,11 @@ main_content <- function(){
                           
                           p(htmlOutput("threat_explanation")),
                           
-                          p("Click the insects to find out how they are affected by human activities."),
+                          h5(htmlOutput("overall_effect")),
+                          
+                          p(""),
+                          
+                          p("Click the insects below to find out how they are each affected by human activities."),
                           
                           
                           fluidRow(
