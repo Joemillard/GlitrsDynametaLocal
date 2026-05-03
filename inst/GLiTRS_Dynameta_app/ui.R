@@ -94,20 +94,20 @@ main_content <- function(){
                       
                       tags$hr(),
                       
-                      p(h5(tags$a(href="https://glitrs.ceh.ac.uk/", "GLiTRS", target = "_blank"), "Dynameta is designed for the ingestion and interactive meta-analyses of insect biodiversity effect sizes, oriented around the effect of anthropogenic threats
+                      p(tags$a(href="https://glitrs.ceh.ac.uk/", "GLiTRS", target = "_blank"), "Dynameta is designed for the ingestion and interactive meta-analyses of insect biodiversity effect sizes, oriented around the effect of anthropogenic threats
                   (based on the ", tags$a(href="https://www.iucnredlist.org/resources/threat-classification-scheme", "IUCN threats classification scheme", .noWS = "outside", target = "_blank"),
-                           ") on biodiversity. If you encounter any issues or bugs while using GLiTRS Dynameta, please raise this with Joe Millard.")),
+                           ") on biodiversity. If you encounter any issues or bugs while using GLiTRS Dynameta, please raise this with Joe Millard."),
                       
-                      p(h5("The platform is split into 5 main pages:")),
+                      p("The platform is split into 5 main pages:"),
                       
-                      h5(tags$ol(
+                      tags$ol(
                         tags$li("Use this 'Introduction' to familiarise yourself with the site and its layout."),
                         tags$li("Use 'Summary' to explore our findings in an engaging way."),
                         tags$li("Use 'Explore data' to access the data behind the project, visualise its geographic distribution, and run custom meta-analytic models investigating the effect of anthropogenic threats on insect biodiversity."),
                         tags$li("Use 'Read more' for any documentation on the appropriate approach for carrying out a GLiTRS meta-analysis.")
                         
           
-                      )),
+                      ),
                       
                       tags$hr(),
                       
@@ -120,11 +120,11 @@ main_content <- function(){
                       
                       # Citation
                       p(
-                        h5("For any publications using GLiTRS Dynameta, please cite both our original software article and the database publication:"),
-                        h5("- Millard, J., Skinner, G., Bladon, A. J., Cooke, R., Outhwaite, C. L., Rodger, J. G., Barnes, L. A., Isip, J., Keum, J., Raw, C., Wenban-Smith, E., Dicks, L. V., Hui, C., Jones, J. I., Woodcock, B., Isaac, N. J., & Purvis, A. (2025). A Multithreat Meta‐Analytic Database for Understanding Insect Biodiversity Change. Diversity and Distributions. DOI:",
-                        tags$a(href = "https://doi.org/10.1111/ddi.70025", "https://doi.org/10.1111/ddi.70025", target = "_blank")),
-                        h5("- Skinner, G., Cooke, R., Junghyuk, K., Purvis, A., Raw, C., Woodcock, B.A., Millard, J. (2023). Dynameta: a dynamic platform for ecological meta-analyses in R Shiny. SoftwareX. DOI:",
-                        tags$a(href = "https://doi.org/10.1016/j.softx.2023.101439", "https://doi.org/10.1016/j.softx.2023.101439", target = "_blank"))
+                        "For any publications using GLiTRS Dynameta, please cite both our original software article and the database publication:",
+                        "- Millard, J., Skinner, G., Bladon, A. J., Cooke, R., Outhwaite, C. L., Rodger, J. G., Barnes, L. A., Isip, J., Keum, J., Raw, C., Wenban-Smith, E., Dicks, L. V., Hui, C., Jones, J. I., Woodcock, B., Isaac, N. J., & Purvis, A. (2025). A Multithreat Meta‐Analytic Database for Understanding Insect Biodiversity Change. Diversity and Distributions. DOI:",
+                        tags$a(href = "https://doi.org/10.1111/ddi.70025", "https://doi.org/10.1111/ddi.70025", target = "_blank"),
+                        "- Skinner, G., Cooke, R., Junghyuk, K., Purvis, A., Raw, C., Woodcock, B.A., Millard, J. (2023). Dynameta: a dynamic platform for ecological meta-analyses in R Shiny. SoftwareX. DOI:",
+                        tags$a(href = "https://doi.org/10.1016/j.softx.2023.101439", "https://doi.org/10.1016/j.softx.2023.101439", target = "_blank")
                       )
                       # ----------------------------------------------------------------------------------------------------------------------
                       
@@ -244,10 +244,10 @@ main_content <- function(){
                                      5, # width of this column within the row (each row has to sum to 12 - includes offsets)
                                      
                                      # add table legend for overview table
-                                     h5(shiny::htmlOutput("table_legend_overview")),
+                                     shiny::htmlOutput("table_legend_overview"),
                                      
                                      # add sample size overview table
-                                     h5(shinycssloaders::withSpinner(shiny::tableOutput("sample_sizes_overview"), type = 8)),
+                                     shinycssloaders::withSpinner(shiny::tableOutput("sample_sizes_overview"), type = 8),
                                      
                                      
                                      
@@ -260,7 +260,7 @@ main_content <- function(){
                                      shinycssloaders::withSpinner(leaflet::leafletOutput("map"), type = 8),
                                      
                                      # Add map figure legend
-                                     h5(shiny::htmlOutput("map_figure_legend")),
+                                     shiny::htmlOutput("map_figure_legend"),
                                      
                                      tags$br(),
                                      
@@ -275,9 +275,9 @@ main_content <- function(){
                                  
                                  
                                  # link to code
-                                 p(h5(shiny::icon("github", lib = "font-awesome", "fa-2x"), # add-in github icon
+                                 p(shiny::icon("github", lib = "font-awesome", "fa-2x"), # add-in github icon
                                       tags$a(href="https://github.com/gls21/Dynameta", "View original Dynameta source code.", target = "_blank"),
-                                      ""))
+                                      "")
                  ),# close overview tab
                  tabPanel("View effect sizes",
                           tags$head(
@@ -290,7 +290,7 @@ main_content <- function(){
                           tags$hr(),
                           
                           # Include table legend for references table
-                          h5(shiny::htmlOutput("references_table_legend")),
+                          shiny::htmlOutput("references_table_legend"),
                           
                           tabsetPanel(
                             
@@ -330,9 +330,9 @@ main_content <- function(){
                                  
                                  tags$hr(),
                                  
-                                 p(h5("Use this tab to investigate how different anthropogenic threats impact insect biodiversity. These models are multilevel meta-analytic models, run using the ", tags$a(href="https://www.metafor-project.org/doku.php/metafor", "metafor", target = "_blank"), " package. They account for the non-independence
+                                 p("Use this tab to investigate how different anthropogenic threats impact insect biodiversity. These models are multilevel meta-analytic models, run using the ", tags$a(href="https://www.metafor-project.org/doku.php/metafor", "metafor", target = "_blank"), " package. They account for the non-independence
                   of the data by specifying Paper_ID and Observation_ID as nested random effects. The effect size used to compare biodiversity is the log transformed Ratio Of Means (ROM) (also known as the log response ratio),
-                  which quantifies proportionate change between treatments.")),
+                  which quantifies proportionate change between treatments."),
                                  
                                  # ******* Add code chunk ui2 here for subgroup-analysis *****************************************************************************
                                  
@@ -348,10 +348,10 @@ main_content <- function(){
                                  
                                  # ******* Add code chunk ui3 here for subgroup-analysis *****************************************************************************
                                  
-                                 h5("Based on your research question, below you can filter the data by threat, location, taxonomic order, and biodiversity metric. Once you have made your selections, click 'Run custom model'.
+                                 p("Based on your research question, below you can filter the data by threat, location, taxonomic order, and biodiversity metric. Once you have made your selections, click 'Run custom model'.
                                                         The model will then run in real-time, with the results presented as a forest plot."),
                                  
-                                 h5("Note that users should be conscious of the dangers of multiple testing, as described ", tags$a(href="https://drmattg.github.io/Uncertain_Ecologist/Dynamic_Meta_analysis.html", "here", target = "_blank"), " by Dr Matthew J Grainger (who is unaffiliated with this project), when using GLiTRS Dynameta to run dynamic meta-analyses. Please see our publication in SoftwareX, entitled 'Dynameta: a dynamic platform for ecological meta-analyses in R Shiny', for more details."),
+                                 p("Note that users should be conscious of the dangers of multiple testing, as described ", tags$a(href="https://drmattg.github.io/Uncertain_Ecologist/Dynamic_Meta_analysis.html", "here", target = "_blank"), " by Dr Matthew J Grainger (who is unaffiliated with this project), when using GLiTRS Dynameta to run dynamic meta-analyses. Please see our publication in SoftwareX, entitled 'Dynameta: a dynamic platform for ecological meta-analyses in R Shiny', for more details."),
                                  
                                  tags$br(),
                                  
@@ -438,7 +438,7 @@ main_content <- function(){
                                      12,
                                      
                                      # add custom model figure legend
-                                     h5(shiny::htmlOutput("custom_model_figure_legend"))
+                                     shiny::htmlOutput("custom_model_figure_legend")
                                      
                                    )
                                    
@@ -451,9 +451,9 @@ main_content <- function(){
                                  
                                  # Add buttons for downloading custom model results
                                  
-                                 p(h5("Use this section to download the results.")),
+                                 p("Use this section to download the results."),
                                  
-                                 p(h5(tags$ul(
+                                 p(tags$ul(
                                    tags$li("Click 'Download R custom model summary' to download a .txt file containing the output of the summary() function
                                                                 applied to the custom model object. This provides a results summary of the model fitting."),
                                    tags$li("Click 'Download R custom model object' to download a .rds file containing the model object.
@@ -462,7 +462,7 @@ main_content <- function(){
                                                                 use the readRDS() and attributes() functions to load the model object and view its attributes.
                                                                 By downloading, it allows the same analysis to be repeated at a later date (perhaps after more data has become available)."),
                                    tags$li("Click 'Download forest plot' to download a .png file of your forest plot.")
-                                 ))),
+                                 )),
                                  
                                  shiny::fluidRow(
                                    
@@ -474,7 +474,7 @@ main_content <- function(){
                                      # download button for downloading model output
                                      shiny::downloadButton(outputId = "download_custom_model_output",
                                                            label = "Download R custom model summary",
-                                                           style='font-size:125%; color: #000; background-color: #eaefec; padding: 12px')
+                                                           style='font-size:100%; color: #000; background-color: #eaefec; padding: 8px')
                                      
                                    ),
                                    
@@ -486,7 +486,7 @@ main_content <- function(){
                                      # download button for downloading model object in rds file
                                      shiny::downloadButton(outputId = "download_custom_model_object",
                                                            label = "Download R custom model object",
-                                                           style='font-size:125%; color: #000; background-color: #eaefec; padding: 12px')
+                                                           style='font-size:100%; color: #000; background-color: #eaefec; padding: 8px')
                                      
                                    ),
                                    
@@ -498,7 +498,7 @@ main_content <- function(){
                                      # download button for downloading forest plot
                                      shiny::downloadButton(outputId = "download_forest_plot",
                                                            label = "Download forest plot",
-                                                           style='font-size:125%; color: #000; background-color: #eaefec; padding: 12px')
+                                                           style='font-size:100%; color: #000; background-color: #eaefec; padding: 8px')
                                      
                                    )
                                    
@@ -523,10 +523,10 @@ main_content <- function(){
                       
                       tags$hr(),
                       
-                      p(h5("First, it's important that our meta-analyses are carried out in line with our protocol, preregistered on the Open Science Framework (OSF)", tags$a(href="https://osf.io/mw7xq/?view_only=", "here", target = "_blank"), ". In the OSF project you'll find the following: 1) a detailed guidance document; 2) a skeleton spreadheet to complete; 3) a skeleton protocol to complete; 4) a spot check spreadsheet to complete; and 5) a set of prior contributor protocols.")),
+                      p("First, it's important that our meta-analyses are carried out in line with our protocol, preregistered on the Open Science Framework (OSF)", tags$a(href="https://osf.io/mw7xq/?view_only=", "here", target = "_blank"), ". In the OSF project you'll find the following: 1) a detailed guidance document; 2) a skeleton spreadheet to complete; 3) a skeleton protocol to complete; 4) a spot check spreadsheet to complete; and 5) a set of prior contributor protocols."),
                       
                       
-                      p(h5("Please refer to and follow the guidance developed by communities of practice
+                      p("Please refer to and follow the guidance developed by communities of practice
                        when conducting evidence syntheses:",
                            tags$ul(
                              tags$li(tags$a(href="https://environmentalevidence.org/", "Collaboration for Environmental Evidence (CEE)", target = "_blank"),
@@ -544,14 +544,14 @@ main_content <- function(){
                              tags$li(tags$a(href="https://www.campbellcollaboration.org/research-resources/training-courses.html", "Campbell Collaboration", target = "_blank"),
                                      " - For conducting evidence syntheses (developed for social sciences field)."),
                              tags$li(tags$a(href = "https://drmattg.github.io/Uncertain_Ecologist/Dynamic_Meta_analysis.html", "Dynamic Meta-analysis: When Transparency Meets Multiplicity by Dr Matthew J Grainger", target = "_blank"),
-                                     " - Blog on the dangers of multiple testing in dynamic meta-analysis.")
-                           ))),
+                                     " - Blog on the dangers of multiple testing in dynamic meta-analysis")
+                           )),
                       
-                      p(h5("The following are useful guides for conducting meta-analyses:",
+                      p("The following are useful guides for conducting meta-analyses:",
                            tags$ul(
                              tags$li(tags$a(href="https://bookdown.org/MathiasHarrer/Doing_Meta_Analysis_in_R/", "Doing Meta-Analysis with R: A Hands-On Guide", target = "_blank")),
                              tags$li(tags$a(href="http://www.metafor-project.org/doku.php/tips", "The metafor package tips and notes", target = "_blank"))
-                           ))),
+                           )),
                       
                       tags$br()
                       
