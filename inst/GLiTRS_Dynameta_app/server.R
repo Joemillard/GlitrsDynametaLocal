@@ -1024,14 +1024,14 @@ server <- function(input, output) {
   })
   
   # Make reactive location choices
-  output$reactive_location <- shiny::renderUI({
-    shinyWidgets::pickerInput(inputId = "location",
-                              label = "Location(s):",
-                              choices = unique(c(data()$Country, prior_data()$Country)),
-                              selected = NULL,
-                              multiple = TRUE,
-                              options = list(`actions-box` = TRUE)) # add actions box for selecting/de-selecting all options
-  })
+  # output$reactive_location <- shiny::renderUI({
+  #   shinyWidgets::pickerInput(inputId = "location",
+  #                             label = "Location(s):",
+  #                             choices = unique(c(data()$Country, prior_data()$Country)),
+  #                             selected = NULL,
+  #                             multiple = TRUE,
+  #                             options = list(`actions-box` = TRUE)) # add actions box for selecting/de-selecting all options
+  # })
   
   # Make reactive taxa order choices
   output$reactive_taxa_order <- shiny::renderUI({
@@ -1073,7 +1073,7 @@ server <- function(input, output) {
     
     shiny::validate(
       shiny::need(input$iucn_threat_category != "", "Please select at least one threat category."),
-      shiny::need(input$location != "", "Please select at least one location."),
+      #shiny::need(input$location != "", "Please select at least one location."),
       shiny::need(input$taxa_order != "", "Please select at least one taxonomic order."),
       shiny::need(input$biodiversity_metric_category != "", "Please select at least one biodiveristy metric category.")
     )
@@ -1081,14 +1081,14 @@ server <- function(input, output) {
     # Filter the data based on the studies the user wants to run the model on
     custom_model_data <- data() %>%
       dplyr::filter(IUCN_threat_category_1 %in% input$iucn_threat_category) %>%
-      dplyr::filter(Country %in% input$location) %>%
+      #dplyr::filter(Country %in% input$location) %>%
       dplyr::filter(Order %in% input$taxa_order) %>%
       dplyr::filter(Biodiversity_metric %in% input$biodiversity_metric_category)
     
     # filter the data also for the prior meta-analysis
     prior_custom_model_data <- prior_data() %>%
       dplyr::filter(IUCN_threat_category_1 %in% input$iucn_threat_category) %>%
-      dplyr::filter(Country %in% input$location) %>%
+      #dplyr::filter(Country %in% input$location) %>%
       dplyr::filter(Order %in% input$taxa_order) %>%
       dplyr::filter(Biodiversity_metric %in% input$biodiversity_metric_category) %>%
       dplyr::filter(Effect_size_type %in% input$effect_size_category)
@@ -1174,7 +1174,7 @@ server <- function(input, output) {
         base::attr(custom_meta_model, "date_and_time") <- base::Sys.time()
         # Data filters
         base::attr(custom_meta_model, "data_filters_IUCN_threat") <- c("IUCN threat category: ", input$iucn_threat_category)
-        base::attr(custom_meta_model, "data_filters_locations") <- c("Location(s): ", input$location)
+        #base::attr(custom_meta_model, "data_filters_locations") <- c("Location(s): ", input$location)
         base::attr(custom_meta_model, "data_filters_taxonomic_orders") <- c("Taxonomic order(s): ", input$taxa_order)
         base::attr(custom_meta_model, "data_filters_biodiversity_metric") <- c("Biodiversity_metric: ", input$biodiversity_metric_category)
         # Session info
@@ -1267,7 +1267,9 @@ server <- function(input, output) {
           with its width representing the 95% confidence interval. The specific ",
           paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. <br><br>",
           "The overall effect size of ", paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on biodiversity for ",
-          paste(shiny::isolate(input$taxa_order), collapse = ", "), " in ", paste(shiny::isolate(input$location), collapse = ", "), " measured with ",
+          paste(shiny::isolate(input$taxa_order), collapse = ", "), 
+          #" in ", paste(shiny::isolate(input$location), collapse = ", "), 
+          " measured with ",
           paste(shiny::isolate(input$biodiversity_metric_category), collapse = ", "), " as the biodiversity metric is ", round(stats::coef(custom_model()), digits = 2),
           ". This equates to a percentage change of ", percentage_change, "%", " [", ci_lb, "%, ", ci_ub, "%]. <br><br>",
           "The", "<i> I² </i>", "statistic for the meta-analysis is ", i2, "%. This describes the percentage of total variance that is due to heterogeneity (variability among studies), and not due to chance. <br><br>",
