@@ -165,7 +165,8 @@ main_content <- function(){
                                 summary_id    <- paste0(insect, "_summary")
                                 # Use the 'insect' string to determine which output to call
                                 conditionalPanel(
-                                  condition = sprintf("output.%s == 'TRUE'", display_id),
+                                  condition = paste0("output['", insect, "_display'] == 'TRUE'"),
+                                  #condition = sprintf("output.%s == 'TRUE'", display_id),
                                   column(2,
                                          popover(
                                            tags$div(
@@ -428,6 +429,12 @@ main_content <- function(){
                                      
                                      # This will make the stop error messages grey (rather than red) if the model doesn't run
                                      tags$head(tags$style(".shiny-output-error{color: grey;}")),
+                                     
+                                     conditionalPanel(
+                                       condition = "output.small_data_warning_display",
+                                       textOutput("small_data_warning")
+                                       ),
+                                     # p(textOutput("small_data_warning_display")),
                                      
                                      # produce custom model graph
                                      shinycssloaders::withSpinner(shiny::plotOutput("custom_model_figure", width = 1500, height = 1000), type = 8)
