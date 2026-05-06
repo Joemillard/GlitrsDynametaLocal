@@ -1295,36 +1295,65 @@ server <- function(input, output) {
     
     shiny::req(custom_model())
     
-    # Convert LRR overall effect size to percentage
-    percentage_change <- round(100 * (exp(stats::coef(custom_model())) - 1), digits = 2)
-    
-    # Calculate confidence interval lower bound in percentage
-    ci_lb <- round(100 * (exp(custom_model()$ci.lb) - 1), digits = 2)
-    
-    # Calculate confidence interval upper bound in percentage
-    ci_ub <- round(100 * (exp(custom_model()$ci.ub) - 1), digits = 2)
-    
-    # Calculate I2 statistic. Code adapted from http://www.metafor-project.org/doku.php/tips:i2_multilevel_multivariate - Multilevel Models section
-    W <- diag(1/custom_model()$vi)
-    X <- metafor::model.matrix.rma(custom_model())
-    P <- W - W %*% X %*% solve(t(X) %*% W %*% X) %*% t(X) %*% W
-    i2 <- round(100 * sum(custom_model()$sigma2) / (sum(custom_model()$sigma2) + (custom_model()$k-custom_model()$p)/sum(diag(P))), digits = 2)
-    
-    # Add these stats to the paste() below.
-    
-    paste("<b>Figure 2. </b>", "Forest plot showing the effect sizes for each data point and the overall effect size of ",
-          paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on insect biodiversity. The overall effect size is indicated by the diamond -
+    if(input$effect_size_category == "LogRR"){
+      # Convert LRR overall effect size to percentage
+      percentage_change <- round(100 * (exp(stats::coef(custom_model())) - 1), digits = 2)
+      
+      # Calculate confidence interval lower bound in percentage
+      ci_lb <- round(100 * (exp(custom_model()$ci.lb) - 1), digits = 2)
+      
+      # Calculate confidence interval upper bound in percentage
+      ci_ub <- round(100 * (exp(custom_model()$ci.ub) - 1), digits = 2)
+      
+      # Calculate I2 statistic. Code adapted from http://www.metafor-project.org/doku.php/tips:i2_multilevel_multivariate - Multilevel Models section
+      W <- diag(1/custom_model()$vi)
+      X <- metafor::model.matrix.rma(custom_model())
+      P <- W - W %*% X %*% solve(t(X) %*% W %*% X) %*% t(X) %*% W
+      i2 <- round(100 * sum(custom_model()$sigma2) / (sum(custom_model()$sigma2) + (custom_model()$k-custom_model()$p)/sum(diag(P))), digits = 2)
+      
+      # Add these stats to the paste() below.
+      
+      paste("<b>Figure 2. </b>", "Forest plot showing the effect sizes for each data point and the overall effect size of ",
+            paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on insect biodiversity. The overall effect size is indicated by the diamond -
           the centre of the diamond on the x-axis represents the point estimate,
           with its width representing the 95% confidence interval. The specific ",
-          paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. <br><br>",
-          "The overall effect size of ", paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on biodiversity for ",
-          paste(shiny::isolate(input$taxa_order), collapse = ", "), 
-          #" in ", paste(shiny::isolate(input$location), collapse = ", "), 
-          " measured with ",
-          paste(shiny::isolate(input$biodiversity_metric_category), collapse = ", "), " as the biodiversity metric is ", round(stats::coef(custom_model()), digits = 2),
-          ". This equates to a percentage change of ", percentage_change, "%", " [", ci_lb, "%, ", ci_ub, "%]. <br><br>",
-          "The", "<i> I² </i>", "statistic for the meta-analysis is ", i2, "%. This describes the percentage of total variance that is due to heterogeneity (variability among studies), and not due to chance. <br><br>",
-          sep = "")
+            paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. <br><br>",
+            "The overall effect size of ", paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on biodiversity for ",
+            paste(shiny::isolate(input$taxa_order), collapse = ", "), 
+            #" in ", paste(shiny::isolate(input$location), collapse = ", "), 
+            " measured with ",
+            paste(shiny::isolate(input$biodiversity_metric_category), collapse = ", "), " as the biodiversity metric is ", round(stats::coef(custom_model()), digits = 2),
+            ". This equates to a percentage change of ", percentage_change, "%", " [", ci_lb, "%, ", ci_ub, "%]. <br><br>",
+            "The", "<i> I² </i>", "statistic for the meta-analysis is ", i2, "%. This describes the percentage of total variance that is due to heterogeneity (variability among studies), and not due to chance. <br><br>",
+            sep = "")
+    } else {
+      
+      # Round confidence intervals
+      ci_ub <- round(custom_model()$ci.ub, digits = 2)
+      ci_lb <- round(custom_model()$ci.lb, digits = 2)
+      
+      # Calculate I2 statistic. Code adapted from http://www.metafor-project.org/doku.php/tips:i2_multilevel_multivariate - Multilevel Models section
+      W <- diag(1/custom_model()$vi)
+      X <- metafor::model.matrix.rma(custom_model())
+      P <- W - W %*% X %*% solve(t(X) %*% W %*% X) %*% t(X) %*% W
+      i2 <- round(100 * sum(custom_model()$sigma2) / (sum(custom_model()$sigma2) + (custom_model()$k-custom_model()$p)/sum(diag(P))), digits = 2)
+      
+      paste("<b>Figure 2. </b>", "Forest plot showing the effect sizes for each data point and the overall effect size of ",
+            paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on insect biodiversity. The overall effect size is indicated by the diamond -
+          the centre of the diamond on the x-axis represents the point estimate,
+          with its width representing the 95% confidence interval. The specific ",
+            paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. <br><br>",
+            "The overall effect size of ", paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on biodiversity for ",
+            paste(shiny::isolate(input$taxa_order), collapse = ", "), 
+            #" in ", paste(shiny::isolate(input$location), collapse = ", "), 
+            " measured with ",
+            paste(shiny::isolate(input$biodiversity_metric_category), collapse = ", "), " as the biodiversity metric is ", round(stats::coef(custom_model()), digits = 2),
+            " [", ci_lb, ", ", ci_ub, 
+            "]. Percentage change cannot be calculated from Hedges' D, but conventional thresholds are that 0.2 is a small effect, 0.5 is a medium effect and 0.8 is a large effect. <br><br>The", "<i> I² </i>", "statistic for the meta-analysis is ", i2, "%. This describes the percentage of total variance that is due to heterogeneity (variability among studies), and not due to chance. <br><br>",
+            sep = "")
+    }
+    
+    
   })
   
   # ----------------------------------------------------------------------------------------------------------------
