@@ -433,14 +433,19 @@ main_content <- function(){
                                      conditionalPanel(
                                        condition = "output.small_data_warning_display",
                                        textOutput("small_data_warning")
-                                       ),
-                                     # p(textOutput("small_data_warning_display")),
+                                     ),
                                      
-                                     # produce custom model graph
-                                     shinycssloaders::withSpinner(shiny::plotOutput("custom_model_figure", width = 1500, height = 1000), type = 8)
+                                     conditionalPanel(
+                                       condition = "output.big_data_graph",
+                                       textOutput("big_data_disclaimer"),
+                                       shinycssloaders::withSpinner(shiny::plotOutput("custom_model_figure_big", width = 800, height = 300), type = 8)
+                                     ),
+                                     conditionalPanel(
+                                       condition = "!output.big_data_graph",
+                                       shinycssloaders::withSpinner(shiny::plotOutput("custom_model_figure_small", width = 1500, height = 1000), type = 8)
+                                     )
                                      
                                    )
-                                   
                                  ),
                                  
                                  shiny::fluidRow(

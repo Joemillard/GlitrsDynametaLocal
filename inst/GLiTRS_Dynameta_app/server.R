@@ -1188,6 +1188,9 @@ server <- function(input, output) {
         # row bind the current and prior meta-analyses together
         custom_model_data <- dplyr::bind_rows(custom_model_data_simp, prior_custom_model_data)
         
+        # remove rows with NAs because the model ignores them and they mess up the plot
+        custom_model_data <- custom_model_data[!is.na(custom_model_data$yi),]
+        
         # Run metafor model
         custom_meta_model <- metafor::rma.mv(yi, vi, # effect sizes and corresponding variances
                                              random = ~ 1 | Paper_ID/Observation_ID, # specify random-effects structure of model
@@ -1243,32 +1246,48 @@ server <- function(input, output) {
   # ---------------------------------------------------------------------------------------------------
   
   ### Plotting custom model graph
-  
-  # Make plot a reactive object
-  figure <- reactive({
-    
+
+  output$big_data_graph <- reactive({
+    custom_model()$k > 100
+  })
+  outputOptions(output, "big_data_graph", suspendWhenHidden = FALSE)
+  output$big_data_disclaimer <- renderText({paste0("Due to the large number of effect sizes corresponding to your selections (n = ", custom_model()$k, "), it is not possible to view all effect sizes here. Please use the 'Download forest plot' button at the bottom of the page to view a version of the graph showing all effect sizes.")})
+  output$custom_model_figure_big <- shiny::renderPlot({
     shiny::req(custom_model())
-    
+    n_studies <- custom_model()$k
+        # 1. Create a blank plot area
+        plot(NA, xlim = c(-12, 8), ylim = c(0, 2),
+             xlab = "Effect Size", ylab = "",
+             yaxt = "n", bty = "n")
+
+        # 2. Add a vertical reference line at 0 (or your null point)
+        abline(v = 0, lty = "dotted")
+
+        # 3. Add the diamond manually
+        metafor::addpoly(custom_model(),
+                         row = 1,
+                         cex = 1.5,
+                         efac = 5,
+                         col = "#0483A4",
+                         mlab = "Overall Pooled Effect")
+      
+  })
+
+  output$custom_model_figure_small <- shiny::renderPlot({
+    shiny::req(custom_model())
+    n_studies <- custom_model()$k
     figure <- metafor::forest(custom_model(),
                               xlim = c(-12, 8), # horizontal limits of the plot region
                               ilab = base::cbind(Treatment), # add in info on treatment used
                               ilab.xpos = -8, # position treatment labels
                               order = Treatment, # Order results by treatment
-                              cex = 1.5,
+                              cex = 1.2,
                               col = "#0483A4", # change colour of overall effect size diamond using CEH hero colour
                               mlab = "RE Model for All Studies",
                               header = "Author(s) and Year",
-                              slab = paste(Paper_ID)) # slab adds study labels which will help when we make forest plot
-    
-  })
-  
-  # Render the plot in Dynameta
-  output$custom_model_figure <- shiny::renderPlot({
-    
-    shiny::req(figure())
-    
-    custom_model_figure <- figure()
-    
+                              slab = paste(Paper_ID), # slab adds study labels which will help when we make forest plot
+                              rows = ceiling(n_studies/50):(n_studies + ceiling(n_studies/50) - 1),
+                              ylim = c(-(ceiling(n_studies/50) * 2), n_studies + (ceiling(n_studies/50) * 3)))
   })
   
   # Produce figure legend
@@ -1372,15 +1391,32 @@ server <- function(input, output) {
       paste0("forest_plot", base::Sys.Date(), ".png", sep="")
     },
     content = function(file) {
-      grDevices::png(file, width = 1500, height = 1000)
+      n_studies <- custom_model()$k
+      # Calculate height: ensure a minimum of 800px, then an additional 20px per row
+      calc_height <- (800 + n_studies * 20)
+      
+      # Dynamic efac: The diamond needs more vertical "boost" when there are many rows (because the rows automatically get a bit narrower)
+      efac_diamond <- max((exp(-(n_studies/40)-50))*2.2e22, 0.09) # this equation was derived graphically so has little mathematical precision
+      efac_whiskers <- max(60/(n_studies + 8), 0.08)
+      
+      # Dynamic point size (cex): Shrink markers slightly for massive plots
+      dynamic_cex <- if(n_studies > 100) 0.8 else 1.2
+      
+      grDevices::png(file, width = 1800, height = calc_height, res = 150) # res=150 improves text crispness
+      
+      # Adjust margins: bottom, left, top, right
+      par(mar = c(5, 4, 6, 2))
+      
       metafor::forest(custom_model(),
-                      xlim = c(-12, 8), # horizontal limits of the plot region
+                      xlim = c(-16, 8), # horizontal limits of the plot region
                       ilab = base::cbind(Treatment), # add in info on treatment used
                       ilab.xpos = -8, # position treatment labels
                       order = Treatment, # Order results by treatment
-                      cex = 1.5,
+                      cex = dynamic_cex,
+                      efac = c(efac_whiskers, efac_diamond),
                       col = "#0483A4", # change colour of overall effect size diamond using CEH hero colour
                       mlab = "RE Model for All Studies",
+                      slab = paste(Paper_ID),
                       header = "Author(s) and Year")
       grDevices::dev.off()
     }
