@@ -237,7 +237,7 @@ main_content <- function(){
                                    accusations of p-hacking (i.e. manipulating the search strings 
                                    until results meet expectations and/or statistical significance). 
                                    On the contrary, if the results are used only for hypothesis 
-                                   generation, p-hacking is entirely valid as long as it is declared 
+                                   generation, p-hacking may in some circumstances be valid as long as it is declared 
                                    as such (i.e. 'We searched for trends within the GLiTRS Dyameta 
                                    database, to identify fields in which further study might be fruitful')."),
                                  
