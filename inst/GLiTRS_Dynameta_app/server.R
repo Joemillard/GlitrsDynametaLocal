@@ -1119,7 +1119,7 @@ server <- function(input, output) {
     
     # Small dataset warning
     output$small_data_warning_display <- reactive({
-      nrow(custom_model_data) > 0 & nrow(custom_model_data) < 10 || nrow(custom_model_data) > 0 & length(unique(custom_model_data$Paper_ID)) == 1
+      nrow(custom_model_data) > 1 & nrow(custom_model_data) < 10 || nrow(custom_model_data) > 0 & length(unique(custom_model_data$Paper_ID)) == 1
     })
     outputOptions(output, "small_data_warning_display", suspendWhenHidden = FALSE)
     output$small_data_warning <- renderText({paste("The following analysis has been conducted on fewer than ten effect sizes, and/or on data drawn from only one paper. The results should therefore be treated with caution.")})
