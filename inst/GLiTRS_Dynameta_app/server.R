@@ -15,6 +15,8 @@ library(readr) # for reading in csv files uploaded to the app
 library(mapview) # for downloading the leaflet map
 library(stringr) # for wrangling text
 library(tm) # for removing numbers from text
+library(conflicted) # to avoid functions masking each other
+library(webshot) # for downloading map
 
 # ---------------------------------------------------------------------------------------------
 
@@ -231,21 +233,21 @@ server <- function(input, output) {
         },
          
         if(c("Latitude") %in% colnames(validation_test)){ 
-          shiny::need(nrow(validation_test %>% filter(Latitude < 90 & Latitude > -90)) - nrow(validation_test) == 0, 
+          shiny::need(nrow(validation_test %>% dplyr::filter(Latitude < 90 & Latitude > -90)) - nrow(validation_test) == 0, 
                       paste0("Latitude is out of range ", 
                              "(see row number ",
                              validation_test %>% 
                                mutate(row_no = row_number()) %>% 
-                               filter(Latitude > 90 | Latitude < -90) %>%
+                               dplyr::filter(Latitude > 90 | Latitude < -90) %>%
                                dplyr::select(row_no), ")"))},
         
         if(c("Longitude") %in% colnames(validation_test)){ 
-          shiny::need(nrow(validation_test %>% filter(Longitude < 180 & Longitude > -180)) - nrow(validation_test) == 0, 
+          shiny::need(nrow(validation_test %>% dplyr::filter(Longitude < 180 & Longitude > -180)) - nrow(validation_test) == 0, 
                       paste0("Longitude is out of range ", 
                              "(see row number ",
                              validation_test %>% 
                                mutate(row_no = row_number()) %>% 
-                               filter(Longitude > 180 | Longitude < -180) %>%
+                               dplyr::filter(Longitude > 180 | Longitude < -180) %>%
                                dplyr::select(row_no), ")"))
         },
         
@@ -253,13 +255,13 @@ server <- function(input, output) {
           # 7. check that year end and start date are the correct way around, if the arithmetic doesn't work flag likely not numeric
           shiny::need(nrow(validation_test %>% 
                              mutate(year_diff = Experimental_year_start - Experimental_year_end) %>%
-                             filter(year_diff > 0)) == 0, 
+                             dplyr::filter(year_diff > 0)) == 0, 
                       paste0("Experimental_year_start is greater than Experimental_year_end ", 
                              "(see row number ",
                              validation_test %>% 
                                mutate(row_no = row_number()) %>% 
                                mutate(year_diff = Experimental_year_start - Experimental_year_end) %>%
-                               filter(year_diff > 0) %>%
+                               dplyr::filter(year_diff > 0) %>%
                                pull(row_no), ")"))
         }, error = function(x) print("Experimental_year_start or Experimental_year_end are non numeric (if not missing)")),
         
@@ -330,32 +332,32 @@ server <- function(input, output) {
         # 6. Check that the coordinates are decimal degrees and of correct range
         shiny::need(is.numeric(validation_test$Latitude) == TRUE, "Latitude is non numeric"),
         shiny::need(is.numeric(validation_test$Longitude) == TRUE, "Longitude is non numeric"),
-        shiny::need(nrow(validation_test %>% filter(Latitude < 90 & Latitude > -90)) - nrow(validation_test) == 0, 
+        shiny::need(nrow(validation_test %>% dplyr::filter(Latitude < 90 & Latitude > -90)) - nrow(validation_test) == 0, 
                     paste0("Latitude is out of range ", 
                            "(see row number ",
                            validation_test %>% 
                              mutate(row_no = row_number()) %>% 
-                             filter(Latitude > 90 | Latitude < -90) %>%
+                             dplyr::filter(Latitude > 90 | Latitude < -90) %>%
                              dplyr::select(row_no), ")")),
-        shiny::need(nrow(validation_test %>% filter(Longitude < 180 & Longitude > -180)) - nrow(validation_test) == 0, 
+        shiny::need(nrow(validation_test %>% dplyr::filter(Longitude < 180 & Longitude > -180)) - nrow(validation_test) == 0, 
                     paste0("Longitude is out of range ", 
                            "(see row number ",
                            validation_test %>% 
                              mutate(row_no = row_number()) %>% 
-                             filter(Longitude > 180 | Longitude < -180) %>%
+                             dplyr::filter(Longitude > 180 | Longitude < -180) %>%
                              dplyr::select(row_no), ")")),
         
         tryCatch({
           # 7. check that year end and start date are the correct way around, if the arithmetic doesn't work flag likely not numeric
           shiny::need(nrow(validation_test %>% 
                              mutate(year_diff = Experimental_year_start - Experimental_year_end) %>%
-                             filter(year_diff > 0)) == 0, 
+                             dplyr::filter(year_diff > 0)) == 0, 
                       paste0("Experimental_year_start is greater than Experimental_year_end ", 
                              "(see row number ",
                              validation_test %>% 
                                mutate(row_no = row_number()) %>% 
                                mutate(year_diff = Experimental_year_start - Experimental_year_end) %>%
-                               filter(year_diff > 0) %>%
+                               dplyr::filter(year_diff > 0) %>%
                                pull(row_no), ")"))
         }, error = function(x) print("Experimental_year_start or Experimental_year_end are non numeric")),
         
@@ -380,14 +382,14 @@ server <- function(input, output) {
     
     # filter out anything with blank errors
     current_data <- current_data %>%
-      filter(Control_error != "") %>%
-      filter(Treatment_error != "") %>%
-      filter(Treatment_N != "") %>%
-      filter(Control_N != "") %>%
-      filter(!is.na(Control_error_type)) %>% # added
-      filter(Control_error_type != "") %>% # added
-      filter(Treatment_error_type != "") %>% # added
-      filter(!is.na(Treatment_error_type)) # added
+      dplyr::filter(Control_error != "") %>%
+      dplyr::filter(Treatment_error != "") %>%
+      dplyr::filter(Treatment_N != "") %>%
+      dplyr::filter(Control_N != "") %>%
+      dplyr::filter(!is.na(Control_error_type)) %>% # added
+      dplyr::filter(Control_error_type != "") %>% # added
+      dplyr::filter(Treatment_error_type != "") %>% # added
+      dplyr::filter(!is.na(Treatment_error_type)) # added
     
     # Mutate treatment error types ci95 and 95% Confidence interval to CI95
     current_data$Treatment_error_type[current_data$Treatment_error_type == "ci95"] <- "CI95"
@@ -681,17 +683,17 @@ server <- function(input, output) {
   data_with_coords <- shiny::reactive({
     
     prior_coords <- prior_data() %>% dplyr::select(Latitude, Longitude) %>%
-      filter(!is.na(Latitude)) %>%
-      filter(Latitude != "") %>%
-      filter(!is.na(Longitude)) %>% 
-      filter(Longitude != "") %>%
+      dplyr::filter(!is.na(Latitude)) %>%
+      dplyr::filter(Latitude != "") %>%
+      dplyr::filter(!is.na(Longitude)) %>% 
+      dplyr::filter(Longitude != "") %>%
       tally() %>% pull(n)
     
     current_coords <- data() %>% dplyr::select(Latitude, Longitude) %>%
-      filter(!is.na(Latitude)) %>%
-      filter(Latitude != "") %>%
-      filter(!is.na(Longitude)) %>% 
-      filter(Longitude != "") %>%
+      dplyr::filter(!is.na(Latitude)) %>%
+      dplyr::filter(Latitude != "") %>%
+      dplyr::filter(!is.na(Longitude)) %>% 
+      dplyr::filter(Longitude != "") %>%
       tally() %>% pull(n)
     
     return(prior_coords + current_coords)
@@ -1153,7 +1155,7 @@ server <- function(input, output) {
           custom_model_data$Control_mean <- custom_model_data$Control_mean + custom_model_data$weighted_sd
           
           custom_model_data <- custom_model_data %>%
-            filter(Treatment_error >= 0 & Control_error >= 0)
+            dplyr::filter(Treatment_error >= 0 & Control_error >= 0)
           
           # calculate effect sizes from number, mean, and SD - data needs to be in wide format
           # Adds yi and vi columns to data

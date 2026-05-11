@@ -10,6 +10,8 @@ library(shinydisconnect) # for displaying nice error message if whole shiny app 
 library(shinyjs) # for enabling and disabling download button (useShinyjs hidden)
 library(stringr) # for wrangling text
 library(tm)
+library(conflicted) # to avoid functions masking each other
+library(webshot) # for downloading map
 
 meta_analysis_outputs <- readRDS("../shiny_data/meta_analysis_outputs.rds")
 insect_orders <- as.character(unique(meta_analysis_outputs$order)) # for the image view
