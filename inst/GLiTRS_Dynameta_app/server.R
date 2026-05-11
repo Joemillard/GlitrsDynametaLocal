@@ -1255,39 +1255,60 @@ server <- function(input, output) {
   output$custom_model_figure_big <- shiny::renderPlot({
     shiny::req(custom_model())
     n_studies <- custom_model()$k
-        # 1. Create a blank plot area
-        plot(NA, xlim = c(-12, 8), ylim = c(0, 2),
-             xlab = "Effect Size", ylab = "",
-             yaxt = "n", bty = "n")
-
-        # 2. Add a vertical reference line at 0 (or your null point)
-        abline(v = 0, lty = "dotted")
-
-        # 3. Add the diamond manually
-        metafor::addpoly(custom_model(),
-                         row = 1,
-                         cex = 1.5,
-                         efac = 5,
-                         col = "#0483A4",
-                         mlab = "Overall Pooled Effect")
-      
+    # 1. Create a blank plot area
+    plot(NA, xlim = c(-12, 8), ylim = c(0, 2),
+         xlab = "Effect Size", ylab = "",
+         yaxt = "n", bty = "n")
+    
+    # 2. Add a vertical reference line at 0 (or your null point)
+    abline(v = 0, lty = "dotted")
+    
+    # 3. Add the diamond manually
+    metafor::addpoly(custom_model(),
+                     row = 1,
+                     cex = 1.5,
+                     efac = 5,
+                     col = "#0483A4",
+                     mlab = "RE Model for All Studies")
+    
   })
 
   output$custom_model_figure_small <- shiny::renderPlot({
     shiny::req(custom_model())
     n_studies <- custom_model()$k
-    figure <- metafor::forest(custom_model(),
-                              xlim = c(-12, 8), # horizontal limits of the plot region
-                              ilab = base::cbind(Treatment), # add in info on treatment used
-                              ilab.xpos = -8, # position treatment labels
-                              order = Treatment, # Order results by treatment
-                              cex = 1.2,
-                              col = "#0483A4", # change colour of overall effect size diamond using CEH hero colour
-                              mlab = "RE Model for All Studies",
-                              header = "Author(s) and Year",
-                              slab = paste(Paper_ID), # slab adds study labels which will help when we make forest plot
-                              rows = ceiling(n_studies/50):(n_studies + ceiling(n_studies/50) - 1),
-                              ylim = c(-(ceiling(n_studies/50) * 2), n_studies + (ceiling(n_studies/50) * 3)))
+    if(input$effect_size_category == "LogRR"){
+      metafor::forest(custom_model(),
+                      xlim = c(-12, 8), # horizontal limits of the plot region
+                      ilab = base::cbind(Treatment), # add in info on treatment used
+                      ilab.xpos = -8, # position treatment labels
+                      order = Treatment, # Order results by treatment
+                      cex = 1,
+                      col = "#0483A4", # change colour of overall effect size diamond using CEH hero colour
+                      mlab = "RE Model for All Studies",
+                      header = "Author(s) and Year",
+                      ilab.lab = "Treatment",
+                      slab = paste(Paper_ID), # slab adds study labels which will help when we make forest plot
+                      rows = ceiling(n_studies/50):(n_studies + ceiling(n_studies/50) - 1),
+                      ylim = c(-(ceiling(n_studies/50) * 2), n_studies + (ceiling(n_studies/50) * 3)),
+                      xlab = "Log response ratio")
+    } else {
+      metafor::forest(custom_model(),
+                      xlim = c(-12, 8), # horizontal limits of the plot region
+                      ilab = base::cbind(Treatment), # add in info on treatment used
+                      ilab.xpos = -8, # position treatment labels
+                      order = Treatment, # Order results by treatment
+                      cex = 1,
+                      col = "#0483A4", # change colour of overall effect size diamond using CEH hero colour
+                      mlab = "RE Model for All Studies",
+                      header = "Author(s) and Year",
+                      ilab.lab = "Treatment",
+                      slab = paste(Paper_ID), # slab adds study labels which will help when we make forest plot
+                      rows = ceiling(n_studies/50):(n_studies + ceiling(n_studies/50) - 1),
+                      ylim = c(-(ceiling(n_studies/50) * 2), n_studies + (ceiling(n_studies/50) * 3)),
+                      xlab = "Hedges' D",
+                      alim = c(-15, 15),
+                      at = c(-15, -10, -5, 0, 5, 10, 15))
+    }
   })
   
   # Produce figure legend
@@ -1436,17 +1457,38 @@ server <- function(input, output) {
       # Adjust margins: bottom, left, top, right
       par(mar = c(5, 4, 6, 2))
       
-      metafor::forest(custom_model(),
-                      xlim = c(-16, 8), # horizontal limits of the plot region
-                      ilab = base::cbind(Treatment), # add in info on treatment used
-                      ilab.xpos = -8, # position treatment labels
-                      order = Treatment, # Order results by treatment
-                      cex = dynamic_cex,
-                      efac = c(efac_whiskers, efac_diamond),
-                      col = "#0483A4", # change colour of overall effect size diamond using CEH hero colour
-                      mlab = "RE Model for All Studies",
-                      slab = paste(Paper_ID),
-                      header = "Author(s) and Year")
+      if(input$effect_size_category == "LogRR"){
+        metafor::forest(custom_model(),
+                        xlim = c(-16, 8), # horizontal limits of the plot region
+                        ilab = base::cbind(Treatment), # add in info on treatment used
+                        ilab.xpos = -8, # position treatment labels
+                        order = Treatment, # Order results by treatment
+                        cex = dynamic_cex,
+                        efac = c(efac_whiskers, efac_diamond),
+                        col = "#0483A4", # change colour of overall effect size diamond using CEH hero colour
+                        mlab = "RE Model for All Studies",
+                        slab = paste(Paper_ID),
+                        header = "Author(s) and Year",
+                        ilab.lab = "Treatment",
+                        xlab = "Log response ratio")
+      } else {
+        metafor::forest(custom_model(),
+                        xlim = c(-24, 20), # horizontal limits of the plot region
+                        ilab = base::cbind(Treatment), # add in info on treatment used
+                        ilab.xpos = -16, # position treatment labels
+                        order = Treatment, # Order results by treatment
+                        cex = dynamic_cex,
+                        efac = c(efac_whiskers, efac_diamond),
+                        col = "#0483A4", # change colour of overall effect size diamond using CEH hero colour
+                        mlab = "RE Model for All Studies",
+                        slab = paste(Paper_ID),
+                        header = "Author(s) and Year",
+                        ilab.lab = "Treatment",
+                        xlab = "Hedges' D",
+                        alim = c(-15, 15),
+                        at = c(-15, -10, -5, 0, 5, 10, 15))
+      }
+      
       grDevices::dev.off()
     }
     
