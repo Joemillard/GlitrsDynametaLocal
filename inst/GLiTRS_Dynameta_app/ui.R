@@ -180,10 +180,10 @@ main_content <- function(){
                                            tags$div(
                                              htmlOutput(paste0(insect, "_summary"))
                                            ),
-                                           p(""), #line break
-                                           tags$div(
-                                             htmlOutput(paste0(insect, "_threat_info"))
-                                           ),
+                                           # p(""), #line break
+                                           # tags$div(
+                                           #   htmlOutput(paste0(insect, "_threat_info"))
+                                           # ),
                                            p(""),
                                            tags$div(
                                              htmlOutput(paste0(insect, "_upper"))

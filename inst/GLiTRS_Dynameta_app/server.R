@@ -867,10 +867,6 @@ server <- function(input, output) {
         )
       })
       
-      threat_info <- switch(input$chosen_threat, 
-                            "2 Agriculture and Aquaculture" = "agriculture/aquaculture",
-                            "9 Pollution" = "pollution",
-                            "8 Invasive & other problematic species, genes & diseases" = "invasive/problematic species, genes and diseases")
       order_info <- switch(insect, 
                            "Blattodea" = "cockroaches and termites",
                            "Coleoptera" = "beetles",
@@ -898,23 +894,6 @@ server <- function(input, output) {
       
       # make text that says whether the effect is significant and if so gives percentage change
       output[[paste0(insect, "_summary")]] <- shiny::renderText({
-        if(is.na(meta_analysis_outputs$pval[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat])){
-          paste("No data")
-        } else if(meta_analysis_outputs$pval[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat] < 0.05){
-          percent_raw <- -(100 - (100*exp(as.numeric(meta_analysis_outputs$beta[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat]))))
-          percent <- round(percent_raw, digits = 0) %>%
-            abs()
-          if(percent_raw < 0){
-            paste0("Our studies found <b>", percent, "% fewer</b> ", insect, " (", order_info, ") in sites with ", threat_info)
-          } else {
-            paste0("Our studies found <b>", percent, "% more</b> ", insect, " (", order_info, ") in sites with ", threat_info)
-          }
-        } else {
-          paste0(insect, " (", order_info, ") are not significantly affected by ", threat_info)
-        }
-      })
-      
-      output[[paste0(insect, "_threat_info")]] <- shiny::renderText({
         threat3 <- meta_analysis_outputs$threat3[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat]
         if(grepl("/", threat3)){
           threat3 <- threat3 %>% # select the values for ID.er in each combination
@@ -926,10 +905,56 @@ server <- function(input, output) {
         }
         threat3 <- gsub("&", "and", threat3)
         threat3 <- removeNumbers(threat3)
+        threat3 <- gsub(". ", "", threat3, fixed = TRUE) # removes space after numbers
         threat3 <- gsub(".", "", threat3, fixed = TRUE)
+        if("Nutrient loads" %in% threat3){
+          threat3 <- gsub("Nutrient loads", "Nutrient loads (fertiliser/nutrient contamination)", threat3, fixed = TRUE)
+        }
+        if("Named species" %in% threat3){
+          threat3 <- gsub("Named species", "Named species (i.e. invasive species)", threat3, fixed = TRUE)
+        }
         threat3 <- paste(threat3, collapse = ", and ")
         paste0("Specific threats investigated: ", threat3)
+        
+        if(is.na(meta_analysis_outputs$pval[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat])){
+          paste("No data")
+        } else if(meta_analysis_outputs$pval[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat] < 0.05){
+          percent_raw <- -(100 - (100*exp(as.numeric(meta_analysis_outputs$beta[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat]))))
+          percent <- round(percent_raw, digits = 0) %>%
+            abs()
+          if(percent_raw < 0){
+            paste0("Our studies found <b>", percent, "% fewer</b> ", insect, " (", order_info, ") in sites with ", threat3)
+          } else {
+            paste0("Our studies found <b>", percent, "% more</b> ", insect, " (", order_info, ") in sites with ", threat3)
+          }
+        } else {
+          paste0(insect, " (", order_info, ") are not significantly affected by ", threat3)
+        }
       })
+      
+      # output[[paste0(insect, "_threat_info")]] <- shiny::renderText({
+      #   threat3 <- meta_analysis_outputs$threat3[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat]
+      #   if(grepl("/", threat3)){
+      #     threat3 <- threat3 %>% # select the values for ID.er in each combination
+      #       str_split(pattern = "\\/") %>% # this separates the two threats at /
+      #       unlist()# %>% # change it from a list into a vector
+      #     # unique() %>% # remove duplicates
+      #     # str_sort() %>% # alphabetise
+      #     # str_c(collapse = "/")
+      #   }
+      #   threat3 <- gsub("&", "and", threat3)
+      #   threat3 <- removeNumbers(threat3)
+      #   threat3 <- gsub(". ", "", threat3, fixed = TRUE) # removes space after numbers
+      #   threat3 <- gsub(".", "", threat3, fixed = TRUE)
+      #   if("Nutrient loads" %in% threat3){
+      #     threat3 <- gsub("Nutrient loads", "Nutrient loads (fertiliser/nutrient contamination)", threat3, fixed = TRUE)
+      #   }
+      #   if("Named species" %in% threat3){
+      #     threat3 <- gsub("Named species", "Named species (i.e. invasive species)", threat3, fixed = TRUE)
+      #   }
+      #   threat3 <- paste(threat3, collapse = ", and ")
+      #   paste0("Specific threats investigated: ", threat3)
+      # })
       
       # make text for upper and lower bounds
       output[[paste0(insect, "_upper")]] <- shiny::renderText({
