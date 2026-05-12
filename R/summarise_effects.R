@@ -122,8 +122,8 @@ summarise_effects <- function(prior_data, current_data, summarise_type){
         
         # combine in the prior meta-analyses
         prior_custom_model_data <- prior_custom_model_data %>%
-          rename(yi = Effect_size) %>%
-          rename(vi = Sample_variance) %>%
+          dplyr::rename(yi = Effect_size) %>%
+          dplyr::rename(vi = Sample_variance) %>%
           dplyr::select(-Aggregated, -Sample_variance_type)
         
         # # Change column type to numeric (from char)
@@ -212,8 +212,8 @@ summarise_effects <- function(prior_data, current_data, summarise_type){
       
       # combine in the prior meta-analyses
       prior_custom_model_data <- prior_custom_model_data %>%
-        rename(yi = Effect_size) %>%
-        rename(vi = Sample_variance) %>%
+        dplyr::rename(yi = Effect_size) %>%
+        dplyr::rename(vi = Sample_variance) %>%
         dplyr::select(-Aggregated, -Sample_variance_type)
       
       # # Change column type to numeric (from char)
