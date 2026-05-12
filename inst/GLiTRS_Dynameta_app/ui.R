@@ -10,6 +10,8 @@ library(shinydisconnect) # for displaying nice error message if whole shiny app 
 library(shinyjs) # for enabling and disabling download button (useShinyjs hidden)
 library(stringr) # for wrangling text
 library(tm)
+library(conflicted) # to avoid functions masking each other
+library(webshot) # for downloading map
 
 meta_analysis_outputs <- readRDS("../shiny_data/meta_analysis_outputs.rds")
 insect_orders <- as.character(unique(meta_analysis_outputs$order)) # for the image view
@@ -119,13 +121,11 @@ main_content <- function(){
                       
                       
                       # Citation
-                      p(
-                        "For any publications using GLiTRS Dynameta, please cite both our original software article and the database publication:",
-                        "- Millard, J., Skinner, G., Bladon, A. J., Cooke, R., Outhwaite, C. L., Rodger, J. G., Barnes, L. A., Isip, J., Keum, J., Raw, C., Wenban-Smith, E., Dicks, L. V., Hui, C., Jones, J. I., Woodcock, B., Isaac, N. J., & Purvis, A. (2025). A Multithreat Meta‐Analytic Database for Understanding Insect Biodiversity Change. Diversity and Distributions. DOI:",
-                        tags$a(href = "https://doi.org/10.1111/ddi.70025", "https://doi.org/10.1111/ddi.70025", target = "_blank"),
-                        "- Skinner, G., Cooke, R., Junghyuk, K., Purvis, A., Raw, C., Woodcock, B.A., Millard, J. (2023). Dynameta: a dynamic platform for ecological meta-analyses in R Shiny. SoftwareX. DOI:",
-                        tags$a(href = "https://doi.org/10.1016/j.softx.2023.101439", "https://doi.org/10.1016/j.softx.2023.101439", target = "_blank")
-                      )
+                        p("For any publications using GLiTRS Dynameta, please cite both our original software article and the database publication:"),
+                        p("- Millard, J., Skinner, G., Bladon, A. J., Cooke, R., Outhwaite, C. L., Rodger, J. G., Barnes, L. A., Isip, J., Keum, J., Raw, C., Wenban-Smith, E., Dicks, L. V., Hui, C., Jones, J. I., Woodcock, B., Isaac, N. J., & Purvis, A. (2025). A Multithreat Meta‐Analytic Database for Understanding Insect Biodiversity Change. Diversity and Distributions. DOI:",
+                           tags$a(href = "https://doi.org/10.1111/ddi.70025", "https://doi.org/10.1111/ddi.70025", target = "_blank")),
+                        p("- Skinner, G., Cooke, R., Junghyuk, K., Purvis, A., Raw, C., Woodcock, B.A., Millard, J. (2023). Dynameta: a dynamic platform for ecological meta-analyses in R Shiny. SoftwareX. DOI:",
+                           tags$a(href = "https://doi.org/10.1016/j.softx.2023.101439", "https://doi.org/10.1016/j.softx.2023.101439", target = "_blank"))
                       # ----------------------------------------------------------------------------------------------------------------------
                       
       ),
@@ -180,10 +180,10 @@ main_content <- function(){
                                            tags$div(
                                              htmlOutput(paste0(insect, "_summary"))
                                            ),
-                                           p(""), #line break
-                                           tags$div(
-                                             htmlOutput(paste0(insect, "_threat_info"))
-                                           ),
+                                           # p(""), #line break
+                                           # tags$div(
+                                           #   htmlOutput(paste0(insect, "_threat_info"))
+                                           # ),
                                            p(""),
                                            tags$div(
                                              htmlOutput(paste0(insect, "_upper"))
@@ -280,7 +280,7 @@ main_content <- function(){
                                  
                                  
                                  # link to code
-                                 p(shiny::icon("github", lib = "font-awesome", "fa-2x"), # add-in github icon
+                                 h5(shiny::icon("github", lib = "font-awesome", "fa-2x"), # add-in github icon
                                       tags$a(href="https://github.com/gls21/Dynameta", "View original Dynameta source code.", target = "_blank"),
                                       "")
                  ),# close overview tab

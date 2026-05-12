@@ -15,6 +15,8 @@ library(readr) # for reading in csv files uploaded to the app
 library(mapview) # for downloading the leaflet map
 library(stringr) # for wrangling text
 library(tm) # for removing numbers from text
+library(conflicted) # to avoid functions masking each other
+library(webshot) # for downloading map
 
 # ---------------------------------------------------------------------------------------------
 
@@ -231,21 +233,21 @@ server <- function(input, output) {
         },
          
         if(c("Latitude") %in% colnames(validation_test)){ 
-          shiny::need(nrow(validation_test %>% filter(Latitude < 90 & Latitude > -90)) - nrow(validation_test) == 0, 
+          shiny::need(nrow(validation_test %>% dplyr::filter(Latitude < 90 & Latitude > -90)) - nrow(validation_test) == 0, 
                       paste0("Latitude is out of range ", 
                              "(see row number ",
                              validation_test %>% 
                                mutate(row_no = row_number()) %>% 
-                               filter(Latitude > 90 | Latitude < -90) %>%
+                               dplyr::filter(Latitude > 90 | Latitude < -90) %>%
                                dplyr::select(row_no), ")"))},
         
         if(c("Longitude") %in% colnames(validation_test)){ 
-          shiny::need(nrow(validation_test %>% filter(Longitude < 180 & Longitude > -180)) - nrow(validation_test) == 0, 
+          shiny::need(nrow(validation_test %>% dplyr::filter(Longitude < 180 & Longitude > -180)) - nrow(validation_test) == 0, 
                       paste0("Longitude is out of range ", 
                              "(see row number ",
                              validation_test %>% 
                                mutate(row_no = row_number()) %>% 
-                               filter(Longitude > 180 | Longitude < -180) %>%
+                               dplyr::filter(Longitude > 180 | Longitude < -180) %>%
                                dplyr::select(row_no), ")"))
         },
         
@@ -253,13 +255,13 @@ server <- function(input, output) {
           # 7. check that year end and start date are the correct way around, if the arithmetic doesn't work flag likely not numeric
           shiny::need(nrow(validation_test %>% 
                              mutate(year_diff = Experimental_year_start - Experimental_year_end) %>%
-                             filter(year_diff > 0)) == 0, 
+                             dplyr::filter(year_diff > 0)) == 0, 
                       paste0("Experimental_year_start is greater than Experimental_year_end ", 
                              "(see row number ",
                              validation_test %>% 
                                mutate(row_no = row_number()) %>% 
                                mutate(year_diff = Experimental_year_start - Experimental_year_end) %>%
-                               filter(year_diff > 0) %>%
+                               dplyr::filter(year_diff > 0) %>%
                                pull(row_no), ")"))
         }, error = function(x) print("Experimental_year_start or Experimental_year_end are non numeric (if not missing)")),
         
@@ -330,32 +332,32 @@ server <- function(input, output) {
         # 6. Check that the coordinates are decimal degrees and of correct range
         shiny::need(is.numeric(validation_test$Latitude) == TRUE, "Latitude is non numeric"),
         shiny::need(is.numeric(validation_test$Longitude) == TRUE, "Longitude is non numeric"),
-        shiny::need(nrow(validation_test %>% filter(Latitude < 90 & Latitude > -90)) - nrow(validation_test) == 0, 
+        shiny::need(nrow(validation_test %>% dplyr::filter(Latitude < 90 & Latitude > -90)) - nrow(validation_test) == 0, 
                     paste0("Latitude is out of range ", 
                            "(see row number ",
                            validation_test %>% 
                              mutate(row_no = row_number()) %>% 
-                             filter(Latitude > 90 | Latitude < -90) %>%
+                             dplyr::filter(Latitude > 90 | Latitude < -90) %>%
                              dplyr::select(row_no), ")")),
-        shiny::need(nrow(validation_test %>% filter(Longitude < 180 & Longitude > -180)) - nrow(validation_test) == 0, 
+        shiny::need(nrow(validation_test %>% dplyr::filter(Longitude < 180 & Longitude > -180)) - nrow(validation_test) == 0, 
                     paste0("Longitude is out of range ", 
                            "(see row number ",
                            validation_test %>% 
                              mutate(row_no = row_number()) %>% 
-                             filter(Longitude > 180 | Longitude < -180) %>%
+                             dplyr::filter(Longitude > 180 | Longitude < -180) %>%
                              dplyr::select(row_no), ")")),
         
         tryCatch({
           # 7. check that year end and start date are the correct way around, if the arithmetic doesn't work flag likely not numeric
           shiny::need(nrow(validation_test %>% 
                              mutate(year_diff = Experimental_year_start - Experimental_year_end) %>%
-                             filter(year_diff > 0)) == 0, 
+                             dplyr::filter(year_diff > 0)) == 0, 
                       paste0("Experimental_year_start is greater than Experimental_year_end ", 
                              "(see row number ",
                              validation_test %>% 
                                mutate(row_no = row_number()) %>% 
                                mutate(year_diff = Experimental_year_start - Experimental_year_end) %>%
-                               filter(year_diff > 0) %>%
+                               dplyr::filter(year_diff > 0) %>%
                                pull(row_no), ")"))
         }, error = function(x) print("Experimental_year_start or Experimental_year_end are non numeric")),
         
@@ -380,14 +382,14 @@ server <- function(input, output) {
     
     # filter out anything with blank errors
     current_data <- current_data %>%
-      filter(Control_error != "") %>%
-      filter(Treatment_error != "") %>%
-      filter(Treatment_N != "") %>%
-      filter(Control_N != "") %>%
-      filter(!is.na(Control_error_type)) %>% # added
-      filter(Control_error_type != "") %>% # added
-      filter(Treatment_error_type != "") %>% # added
-      filter(!is.na(Treatment_error_type)) # added
+      dplyr::filter(Control_error != "") %>%
+      dplyr::filter(Treatment_error != "") %>%
+      dplyr::filter(Treatment_N != "") %>%
+      dplyr::filter(Control_N != "") %>%
+      dplyr::filter(!is.na(Control_error_type)) %>% # added
+      dplyr::filter(Control_error_type != "") %>% # added
+      dplyr::filter(Treatment_error_type != "") %>% # added
+      dplyr::filter(!is.na(Treatment_error_type)) # added
     
     # Mutate treatment error types ci95 and 95% Confidence interval to CI95
     current_data$Treatment_error_type[current_data$Treatment_error_type == "ci95"] <- "CI95"
@@ -681,17 +683,17 @@ server <- function(input, output) {
   data_with_coords <- shiny::reactive({
     
     prior_coords <- prior_data() %>% dplyr::select(Latitude, Longitude) %>%
-      filter(!is.na(Latitude)) %>%
-      filter(Latitude != "") %>%
-      filter(!is.na(Longitude)) %>% 
-      filter(Longitude != "") %>%
+      dplyr::filter(!is.na(Latitude)) %>%
+      dplyr::filter(Latitude != "") %>%
+      dplyr::filter(!is.na(Longitude)) %>% 
+      dplyr::filter(Longitude != "") %>%
       tally() %>% pull(n)
     
     current_coords <- data() %>% dplyr::select(Latitude, Longitude) %>%
-      filter(!is.na(Latitude)) %>%
-      filter(Latitude != "") %>%
-      filter(!is.na(Longitude)) %>% 
-      filter(Longitude != "") %>%
+      dplyr::filter(!is.na(Latitude)) %>%
+      dplyr::filter(Latitude != "") %>%
+      dplyr::filter(!is.na(Longitude)) %>% 
+      dplyr::filter(Longitude != "") %>%
       tally() %>% pull(n)
     
     return(prior_coords + current_coords)
@@ -865,10 +867,6 @@ server <- function(input, output) {
         )
       })
       
-      threat_info <- switch(input$chosen_threat, 
-                            "2 Agriculture and Aquaculture" = "agriculture/aquaculture",
-                            "9 Pollution" = "pollution",
-                            "8 Invasive & other problematic species, genes & diseases" = "invasive/problematic species, genes and diseases")
       order_info <- switch(insect, 
                            "Blattodea" = "cockroaches and termites",
                            "Coleoptera" = "beetles",
@@ -896,23 +894,6 @@ server <- function(input, output) {
       
       # make text that says whether the effect is significant and if so gives percentage change
       output[[paste0(insect, "_summary")]] <- shiny::renderText({
-        if(is.na(meta_analysis_outputs$pval[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat])){
-          paste("No data")
-        } else if(meta_analysis_outputs$pval[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat] < 0.05){
-          percent_raw <- -(100 - (100*exp(as.numeric(meta_analysis_outputs$beta[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat]))))
-          percent <- round(percent_raw, digits = 0) %>%
-            abs()
-          if(percent_raw < 0){
-            paste0("Our studies found <b>", percent, "% fewer</b> ", insect, " (", order_info, ") in sites with ", threat_info)
-          } else {
-            paste0("Our studies found <b>", percent, "% more</b> ", insect, " (", order_info, ") in sites with ", threat_info)
-          }
-        } else {
-          paste0(insect, " (", order_info, ") are not significantly affected by ", threat_info)
-        }
-      })
-      
-      output[[paste0(insect, "_threat_info")]] <- shiny::renderText({
         threat3 <- meta_analysis_outputs$threat3[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat]
         if(grepl("/", threat3)){
           threat3 <- threat3 %>% # select the values for ID.er in each combination
@@ -924,10 +905,56 @@ server <- function(input, output) {
         }
         threat3 <- gsub("&", "and", threat3)
         threat3 <- removeNumbers(threat3)
+        threat3 <- gsub(". ", "", threat3, fixed = TRUE) # removes space after numbers
         threat3 <- gsub(".", "", threat3, fixed = TRUE)
+        if("Nutrient loads" %in% threat3){
+          threat3 <- gsub("Nutrient loads", "Nutrient loads (fertiliser/nutrient contamination)", threat3, fixed = TRUE)
+        }
+        if("Named species" %in% threat3){
+          threat3 <- gsub("Named species", "Named species (i.e. invasive species)", threat3, fixed = TRUE)
+        }
         threat3 <- paste(threat3, collapse = ", and ")
         paste0("Specific threats investigated: ", threat3)
+        
+        if(is.na(meta_analysis_outputs$pval[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat])){
+          paste("No data")
+        } else if(meta_analysis_outputs$pval[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat] < 0.05){
+          percent_raw <- -(100 - (100*exp(as.numeric(meta_analysis_outputs$beta[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat]))))
+          percent <- round(percent_raw, digits = 0) %>%
+            abs()
+          if(percent_raw < 0){
+            paste0("Our studies found <b>", percent, "% fewer</b> ", insect, " (", order_info, ") in sites with ", threat3)
+          } else {
+            paste0("Our studies found <b>", percent, "% more</b> ", insect, " (", order_info, ") in sites with ", threat3)
+          }
+        } else {
+          paste0(insect, " (", order_info, ") are not significantly affected by ", threat3)
+        }
       })
+      
+      # output[[paste0(insect, "_threat_info")]] <- shiny::renderText({
+      #   threat3 <- meta_analysis_outputs$threat3[meta_analysis_outputs$order == insect & meta_analysis_outputs$threat == input$chosen_threat]
+      #   if(grepl("/", threat3)){
+      #     threat3 <- threat3 %>% # select the values for ID.er in each combination
+      #       str_split(pattern = "\\/") %>% # this separates the two threats at /
+      #       unlist()# %>% # change it from a list into a vector
+      #     # unique() %>% # remove duplicates
+      #     # str_sort() %>% # alphabetise
+      #     # str_c(collapse = "/")
+      #   }
+      #   threat3 <- gsub("&", "and", threat3)
+      #   threat3 <- removeNumbers(threat3)
+      #   threat3 <- gsub(". ", "", threat3, fixed = TRUE) # removes space after numbers
+      #   threat3 <- gsub(".", "", threat3, fixed = TRUE)
+      #   if("Nutrient loads" %in% threat3){
+      #     threat3 <- gsub("Nutrient loads", "Nutrient loads (fertiliser/nutrient contamination)", threat3, fixed = TRUE)
+      #   }
+      #   if("Named species" %in% threat3){
+      #     threat3 <- gsub("Named species", "Named species (i.e. invasive species)", threat3, fixed = TRUE)
+      #   }
+      #   threat3 <- paste(threat3, collapse = ", and ")
+      #   paste0("Specific threats investigated: ", threat3)
+      # })
       
       # make text for upper and lower bounds
       output[[paste0(insect, "_upper")]] <- shiny::renderText({
@@ -1119,7 +1146,7 @@ server <- function(input, output) {
     
     # Small dataset warning
     output$small_data_warning_display <- reactive({
-      nrow(custom_model_data) > 0 & nrow(custom_model_data) < 10 || nrow(custom_model_data) > 0 & length(unique(custom_model_data$Paper_ID)) == 1
+      nrow(custom_model_data) > 1 & nrow(custom_model_data) < 10 || nrow(custom_model_data) > 0 & length(unique(custom_model_data$Paper_ID)) == 1
     })
     outputOptions(output, "small_data_warning_display", suspendWhenHidden = FALSE)
     output$small_data_warning <- renderText({paste("The following analysis has been conducted on fewer than ten effect sizes, and/or on data drawn from only one paper. The results should therefore be treated with caution.")})
@@ -1153,7 +1180,7 @@ server <- function(input, output) {
           custom_model_data$Control_mean <- custom_model_data$Control_mean + custom_model_data$weighted_sd
           
           custom_model_data <- custom_model_data %>%
-            filter(Treatment_error >= 0 & Control_error >= 0)
+            dplyr::filter(Treatment_error >= 0 & Control_error >= 0)
           
           # calculate effect sizes from number, mean, and SD - data needs to be in wide format
           # Adds yi and vi columns to data
@@ -1255,39 +1282,60 @@ server <- function(input, output) {
   output$custom_model_figure_big <- shiny::renderPlot({
     shiny::req(custom_model())
     n_studies <- custom_model()$k
-        # 1. Create a blank plot area
-        plot(NA, xlim = c(-12, 8), ylim = c(0, 2),
-             xlab = "Effect Size", ylab = "",
-             yaxt = "n", bty = "n")
-
-        # 2. Add a vertical reference line at 0 (or your null point)
-        abline(v = 0, lty = "dotted")
-
-        # 3. Add the diamond manually
-        metafor::addpoly(custom_model(),
-                         row = 1,
-                         cex = 1.5,
-                         efac = 5,
-                         col = "#0483A4",
-                         mlab = "Overall Pooled Effect")
-      
+    # 1. Create a blank plot area
+    plot(NA, xlim = c(-12, 8), ylim = c(0, 2),
+         xlab = "Effect Size", ylab = "",
+         yaxt = "n", bty = "n")
+    
+    # 2. Add a vertical reference line at 0 (or your null point)
+    abline(v = 0, lty = "dotted")
+    
+    # 3. Add the diamond manually
+    metafor::addpoly(custom_model(),
+                     row = 1,
+                     cex = 1.5,
+                     efac = 5,
+                     col = "#0483A4",
+                     mlab = "RE Model for All Studies")
+    
   })
 
   output$custom_model_figure_small <- shiny::renderPlot({
     shiny::req(custom_model())
     n_studies <- custom_model()$k
-    figure <- metafor::forest(custom_model(),
-                              xlim = c(-12, 8), # horizontal limits of the plot region
-                              ilab = base::cbind(Treatment), # add in info on treatment used
-                              ilab.xpos = -8, # position treatment labels
-                              order = Treatment, # Order results by treatment
-                              cex = 1.2,
-                              col = "#0483A4", # change colour of overall effect size diamond using CEH hero colour
-                              mlab = "RE Model for All Studies",
-                              header = "Author(s) and Year",
-                              slab = paste(Paper_ID), # slab adds study labels which will help when we make forest plot
-                              rows = ceiling(n_studies/50):(n_studies + ceiling(n_studies/50) - 1),
-                              ylim = c(-(ceiling(n_studies/50) * 2), n_studies + (ceiling(n_studies/50) * 3)))
+    if(input$effect_size_category == "LogRR"){
+      metafor::forest(custom_model(),
+                      xlim = c(-12, 8), # horizontal limits of the plot region
+                      ilab = base::cbind(Treatment), # add in info on treatment used
+                      ilab.xpos = -8, # position treatment labels
+                      order = Treatment, # Order results by treatment
+                      cex = 1,
+                      col = "#0483A4", # change colour of overall effect size diamond using CEH hero colour
+                      mlab = "RE Model for All Studies",
+                      header = "Author(s) and Year",
+                      ilab.lab = "Treatment",
+                      slab = paste(Paper_ID), # slab adds study labels which will help when we make forest plot
+                      rows = ceiling(n_studies/50):(n_studies + ceiling(n_studies/50) - 1),
+                      ylim = c(-(ceiling(n_studies/50) * 2), n_studies + (ceiling(n_studies/50) * 3)),
+                      xlab = "Log response ratio")
+    } else {
+      metafor::forest(custom_model(),
+                      xlim = c(-12, 8), # horizontal limits of the plot region
+                      ilab = base::cbind(Treatment), # add in info on treatment used
+                      ilab.xpos = -8, # position treatment labels
+                      order = Treatment, # Order results by treatment
+                      cex = 1,
+                      col = "#0483A4", # change colour of overall effect size diamond using CEH hero colour
+                      mlab = "RE Model for All Studies",
+                      header = "Author(s) and Year",
+                      ilab.lab = "Treatment",
+                      slab = paste(Paper_ID), # slab adds study labels which will help when we make forest plot
+                      rows = ceiling(n_studies/50):(n_studies + ceiling(n_studies/50) - 1),
+                      ylim = c(-(ceiling(n_studies/50) * 2), n_studies + (ceiling(n_studies/50) * 3)),
+                      xlab = "Hedges' D",
+                      alim = c(-15, 15),
+                      at = c(-15, -10, -5, 0, 5, 10, 15))
+    }
   })
   
   # Produce figure legend
@@ -1295,36 +1343,65 @@ server <- function(input, output) {
     
     shiny::req(custom_model())
     
-    # Convert LRR overall effect size to percentage
-    percentage_change <- round(100 * (exp(stats::coef(custom_model())) - 1), digits = 2)
-    
-    # Calculate confidence interval lower bound in percentage
-    ci_lb <- round(100 * (exp(custom_model()$ci.lb) - 1), digits = 2)
-    
-    # Calculate confidence interval upper bound in percentage
-    ci_ub <- round(100 * (exp(custom_model()$ci.ub) - 1), digits = 2)
-    
-    # Calculate I2 statistic. Code adapted from http://www.metafor-project.org/doku.php/tips:i2_multilevel_multivariate - Multilevel Models section
-    W <- diag(1/custom_model()$vi)
-    X <- metafor::model.matrix.rma(custom_model())
-    P <- W - W %*% X %*% solve(t(X) %*% W %*% X) %*% t(X) %*% W
-    i2 <- round(100 * sum(custom_model()$sigma2) / (sum(custom_model()$sigma2) + (custom_model()$k-custom_model()$p)/sum(diag(P))), digits = 2)
-    
-    # Add these stats to the paste() below.
-    
-    paste("<b>Figure 2. </b>", "Forest plot showing the effect sizes for each data point and the overall effect size of ",
-          paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on insect biodiversity. The overall effect size is indicated by the diamond -
+    if(input$effect_size_category == "LogRR"){
+      # Convert LRR overall effect size to percentage
+      percentage_change <- round(100 * (exp(stats::coef(custom_model())) - 1), digits = 2)
+      
+      # Calculate confidence interval lower bound in percentage
+      ci_lb <- round(100 * (exp(custom_model()$ci.lb) - 1), digits = 2)
+      
+      # Calculate confidence interval upper bound in percentage
+      ci_ub <- round(100 * (exp(custom_model()$ci.ub) - 1), digits = 2)
+      
+      # Calculate I2 statistic. Code adapted from http://www.metafor-project.org/doku.php/tips:i2_multilevel_multivariate - Multilevel Models section
+      W <- diag(1/custom_model()$vi)
+      X <- metafor::model.matrix.rma(custom_model())
+      P <- W - W %*% X %*% solve(t(X) %*% W %*% X) %*% t(X) %*% W
+      i2 <- round(100 * sum(custom_model()$sigma2) / (sum(custom_model()$sigma2) + (custom_model()$k-custom_model()$p)/sum(diag(P))), digits = 2)
+      
+      # Add these stats to the paste() below.
+      
+      paste("<b>Figure 2. </b>", "Forest plot showing the effect sizes for each data point and the overall effect size of ",
+            paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on insect biodiversity. The overall effect size is indicated by the diamond -
           the centre of the diamond on the x-axis represents the point estimate,
           with its width representing the 95% confidence interval. The specific ",
-          paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. <br><br>",
-          "The overall effect size of ", paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on biodiversity for ",
-          paste(shiny::isolate(input$taxa_order), collapse = ", "), 
-          #" in ", paste(shiny::isolate(input$location), collapse = ", "), 
-          " measured with ",
-          paste(shiny::isolate(input$biodiversity_metric_category), collapse = ", "), " as the biodiversity metric is ", round(stats::coef(custom_model()), digits = 2),
-          ". This equates to a percentage change of ", percentage_change, "%", " [", ci_lb, "%, ", ci_ub, "%]. <br><br>",
-          "The", "<i> I² </i>", "statistic for the meta-analysis is ", i2, "%. This describes the percentage of total variance that is due to heterogeneity (variability among studies), and not due to chance. <br><br>",
-          sep = "")
+            paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. <br><br>",
+            "The overall effect size of ", paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on biodiversity for ",
+            paste(shiny::isolate(input$taxa_order), collapse = ", "), 
+            #" in ", paste(shiny::isolate(input$location), collapse = ", "), 
+            " measured with ",
+            paste(shiny::isolate(input$biodiversity_metric_category), collapse = ", "), " as the biodiversity metric is ", round(stats::coef(custom_model()), digits = 2),
+            ". This equates to a percentage change of ", percentage_change, "%", " [", ci_lb, "%, ", ci_ub, "%]. <br><br>",
+            "The", "<i> I² </i>", "statistic for the meta-analysis is ", i2, "%. This describes the percentage of total variance that is due to heterogeneity (variability among studies), and not due to chance. <br><br>",
+            sep = "")
+    } else {
+      
+      # Round confidence intervals
+      ci_ub <- round(custom_model()$ci.ub, digits = 2)
+      ci_lb <- round(custom_model()$ci.lb, digits = 2)
+      
+      # Calculate I2 statistic. Code adapted from http://www.metafor-project.org/doku.php/tips:i2_multilevel_multivariate - Multilevel Models section
+      W <- diag(1/custom_model()$vi)
+      X <- metafor::model.matrix.rma(custom_model())
+      P <- W - W %*% X %*% solve(t(X) %*% W %*% X) %*% t(X) %*% W
+      i2 <- round(100 * sum(custom_model()$sigma2) / (sum(custom_model()$sigma2) + (custom_model()$k-custom_model()$p)/sum(diag(P))), digits = 2)
+      
+      paste("<b>Figure 2. </b>", "Forest plot showing the effect sizes for each data point and the overall effect size of ",
+            paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on insect biodiversity. The overall effect size is indicated by the diamond -
+          the centre of the diamond on the x-axis represents the point estimate,
+          with its width representing the 95% confidence interval. The specific ",
+            paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. <br><br>",
+            "The overall effect size of ", paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on biodiversity for ",
+            paste(shiny::isolate(input$taxa_order), collapse = ", "), 
+            #" in ", paste(shiny::isolate(input$location), collapse = ", "), 
+            " measured with ",
+            paste(shiny::isolate(input$biodiversity_metric_category), collapse = ", "), " as the biodiversity metric is ", round(stats::coef(custom_model()), digits = 2),
+            " [", ci_lb, ", ", ci_ub, 
+            "]. Percentage change cannot be calculated from Hedges' D, but conventional thresholds are that 0.2 is a small effect, 0.5 is a medium effect and 0.8 is a large effect. <br><br>The", "<i> I² </i>", "statistic for the meta-analysis is ", i2, "%. This describes the percentage of total variance that is due to heterogeneity (variability among studies), and not due to chance. <br><br>",
+            sep = "")
+    }
+    
+    
   })
   
   # ----------------------------------------------------------------------------------------------------------------
@@ -1407,17 +1484,38 @@ server <- function(input, output) {
       # Adjust margins: bottom, left, top, right
       par(mar = c(5, 4, 6, 2))
       
-      metafor::forest(custom_model(),
-                      xlim = c(-16, 8), # horizontal limits of the plot region
-                      ilab = base::cbind(Treatment), # add in info on treatment used
-                      ilab.xpos = -8, # position treatment labels
-                      order = Treatment, # Order results by treatment
-                      cex = dynamic_cex,
-                      efac = c(efac_whiskers, efac_diamond),
-                      col = "#0483A4", # change colour of overall effect size diamond using CEH hero colour
-                      mlab = "RE Model for All Studies",
-                      slab = paste(Paper_ID),
-                      header = "Author(s) and Year")
+      if(input$effect_size_category == "LogRR"){
+        metafor::forest(custom_model(),
+                        xlim = c(-16, 8), # horizontal limits of the plot region
+                        ilab = base::cbind(Treatment), # add in info on treatment used
+                        ilab.xpos = -8, # position treatment labels
+                        order = Treatment, # Order results by treatment
+                        cex = dynamic_cex,
+                        efac = c(efac_whiskers, efac_diamond),
+                        col = "#0483A4", # change colour of overall effect size diamond using CEH hero colour
+                        mlab = "RE Model for All Studies",
+                        slab = paste(Paper_ID),
+                        header = "Author(s) and Year",
+                        ilab.lab = "Treatment",
+                        xlab = "Log response ratio")
+      } else {
+        metafor::forest(custom_model(),
+                        xlim = c(-24, 20), # horizontal limits of the plot region
+                        ilab = base::cbind(Treatment), # add in info on treatment used
+                        ilab.xpos = -16, # position treatment labels
+                        order = Treatment, # Order results by treatment
+                        cex = dynamic_cex,
+                        efac = c(efac_whiskers, efac_diamond),
+                        col = "#0483A4", # change colour of overall effect size diamond using CEH hero colour
+                        mlab = "RE Model for All Studies",
+                        slab = paste(Paper_ID),
+                        header = "Author(s) and Year",
+                        ilab.lab = "Treatment",
+                        xlab = "Hedges' D",
+                        alim = c(-15, 15),
+                        at = c(-15, -10, -5, 0, 5, 10, 15))
+      }
+      
       grDevices::dev.off()
     }
     
