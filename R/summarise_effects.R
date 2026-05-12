@@ -1,3 +1,13 @@
+#' Summarise Effects
+#'
+#' Generates the datasets which are read by the Summary page of the shiny app. This script should be run twice every time new data is added, and the outputs saved to replace the previous outputs in inst/shiny_data. Setting summarise_type = "order" generates meta_analysis_outputs.rds; setting summarise_type = "all" generates all_orders_meta_analysis_outputs.rds.
+#'
+#' @param prior_data The data.frame prior_data from inst/shiny_data
+#' @param current_data The data.frame current_data from inst/shiny_data
+#' @param summarise_type "order" for order-level summary (inst/shiny_data/meta_analysis_outputs.rds) or "all" for the overall effect on insects (inst/shiny_data/all-orders_meta_analysis_outputs.rds)
+#' 
+#' @export
+
 summarise_effects <- function(prior_data, current_data, summarise_type){
   
   current_data$Treatment_error <- as.numeric(current_data$Treatment_error) # was numeric
