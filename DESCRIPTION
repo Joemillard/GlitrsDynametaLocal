@@ -22,4 +22,5 @@ Imports:
     shinydisconnect,
     shinyjs,
     shinyWidgets,
-    dplyr
+    dplyr,
+    magrittr
