@@ -1218,6 +1218,31 @@ server <- function(input, output) {
         # remove rows with NAs because the model ignores them and they mess up the plot
         custom_model_data <- custom_model_data[!is.na(custom_model_data$yi),]
         
+        # for figure caption:
+        # summarise threats investigated
+        threat3 <- NULL
+        for(a in custom_model_data$Observation_ID){
+          if(!is.na(custom_model_data$IUCN_threat_category_3[custom_model_data$Observation_ID == a])){
+            threat3 <- c(threat3, custom_model_data$IUCN_threat_category_3[custom_model_data$Observation_ID == a])
+          } else {
+            threat3 <- c(threat3, custom_model_data$IUCN_threat_category_2[custom_model_data$Observation_ID == a])
+          }
+        }
+        threat3 <- unique(threat3)
+        threat3 <- gsub("&", "and", threat3)
+        threat3 <- removeNumbers(threat3)
+        threat3 <- gsub(". ", "", threat3, fixed = TRUE) # removes space after numbers
+        threat3 <- gsub(".", "", threat3, fixed = TRUE)
+        if("Nutrient loads" %in% threat3){
+          threat3 <- gsub("Nutrient loads", "Nutrient loads (fertiliser/nutrient contamination)", threat3, fixed = TRUE)
+        }
+        if("Named species" %in% threat3){
+          threat3 <- gsub("Named species", "Named species (i.e. invasive species)", threat3, fixed = TRUE)
+        }
+        threat3 <- paste(threat3, collapse = ", and ")
+        threat3 <- paste0(threat3, ".")
+        output$threat3 <- renderText(threat3)
+        
         # Run metafor model
         custom_meta_model <- metafor::rma.mv(yi, vi, # effect sizes and corresponding variances
                                              random = ~ 1 | Paper_ID/Observation_ID, # specify random-effects structure of model
@@ -1365,8 +1390,8 @@ server <- function(input, output) {
             paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on insect biodiversity. The overall effect size is indicated by the diamond -
           the centre of the diamond on the x-axis represents the point estimate,
           with its width representing the 95% confidence interval. The specific ",
-            paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. <br><br>",
-            "The overall effect size of ", paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on biodiversity for ",
+            paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. The IUCN subcategories addressed here are:", shiny::isolate(textOutput("threat3")), 
+            "<br><br>The overall effect size of ", paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on biodiversity for ",
             paste(shiny::isolate(input$taxa_order), collapse = ", "), 
             #" in ", paste(shiny::isolate(input$location), collapse = ", "), 
             " measured with ",
@@ -1390,8 +1415,8 @@ server <- function(input, output) {
             paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on insect biodiversity. The overall effect size is indicated by the diamond -
           the centre of the diamond on the x-axis represents the point estimate,
           with its width representing the 95% confidence interval. The specific ",
-            paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. <br><br>",
-            "The overall effect size of ", paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on biodiversity for ",
+            paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. The IUCN subcategories addressed here are:", shiny::isolate(textOutput("threat3")),
+            "<br><br>The overall effect size of ", paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on biodiversity for ",
             paste(shiny::isolate(input$taxa_order), collapse = ", "), 
             #" in ", paste(shiny::isolate(input$location), collapse = ", "), 
             " measured with ",
