@@ -15,7 +15,6 @@ library(readr) # for reading in csv files uploaded to the app
 library(mapview) # for downloading the leaflet map
 library(stringr) # for wrangling text
 library(tm) # for removing numbers from text
-library(conflicted) # to avoid functions masking each other
 library(webshot) # for downloading map
 
 # ---------------------------------------------------------------------------------------------
