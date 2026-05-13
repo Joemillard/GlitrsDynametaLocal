@@ -12,10 +12,10 @@ library(shinyjs) # for enabling and disabling download button (enable disable sh
 library(shinyWidgets) # for including a 'select all' option for filters (pickerInput)
 library(tidyr) # for tidying messy data, part of tidyverse (drop_na)
 library(readr) # for reading in csv files uploaded to the app
-library(mapview) # for downloading the leaflet map
+# library(mapview) # for downloading the leaflet map
 library(stringr) # for wrangling text
 library(tm) # for removing numbers from text
-library(webshot) # for downloading map
+# library(webshot) # for downloading map
 
 # ---------------------------------------------------------------------------------------------
 
@@ -874,7 +874,7 @@ server <- function(input, output) {
                            "Embioptera" = "webspinners/footspinners",
                            "Ephemeroptera" = "mayflies",
                            "Hemiptera" = "true bugs",
-                           "Hymenoptera" = "ants, bees, wasps and sawflies",
+                           "Hymenoptera" = "bees, wasps, ants and sawflies",
                            "Lepidoptera" = "butterflies and moths",
                            "Mecoptera" = "scorpionflies",
                            "Megaloptera" = "alderflies, dobsonflies and fishflies",
@@ -1545,6 +1545,8 @@ server <- function(input, output) {
     }
     
   )
+  
+  
   
   # ******* Add code chunk server1 here for subgroup-analysis *****************************************************************************
   
