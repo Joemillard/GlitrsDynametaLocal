@@ -15,7 +15,6 @@ library(readr) # for reading in csv files uploaded to the app
 library(mapview) # for downloading the leaflet map
 library(stringr) # for wrangling text
 library(tm) # for removing numbers from text
-library(conflicted) # to avoid functions masking each other
 library(webshot) # for downloading map
 
 # ---------------------------------------------------------------------------------------------
@@ -1129,8 +1128,30 @@ server <- function(input, output) {
       shiny::need(input$biodiversity_metric_category != "", "Please select at least one biodiveristy metric category.")
     )
     
+    # add small fraction of pooled standard deviation for each study to control and treatment columns
+    custom_model_data <- data()
+    weighted_sd <- NULL
+    # extract pooled standard deviations
+    for(paper in custom_model_data$Paper_ID){
+      # weighted averages of control and treatment standard deviations, weighted by sample size
+      control_sd <- weighted.mean(custom_model_data$Control_error[custom_model_data$Paper_ID == paper], custom_model_data$Control_N[custom_model_data$Paper_ID == paper])
+      treatment_sd <- weighted.mean(custom_model_data$Treatment_error[custom_model_data$Paper_ID == paper], custom_model_data$Treatment_N[custom_model_data$Paper_ID == paper])
+      # combine them to one final weighted average, divide it by 14, and add it to a vector where each element corresponds to a row of custom_model_data
+      means <- c(control_sd, treatment_sd)
+      N <- c(sum(custom_model_data$Control_N[custom_model_data$Paper_ID == paper]), sum(custom_model_data$Treatment_N[custom_model_data$Paper_ID == paper]))
+      weighted_sd <- c(weighted_sd, (weighted.mean(means, N))/14) 
+      # 14 is the value for which the mean standard deviation of log response ratios for rows containing zeroes originally is closest to the standard deviation of the unadjusted log response ratios for all the rows with no zeroes originally.
+      # In Gemini's words, "We applied an adjustment that prevented the mathematical explosion of variance in zero-count studies, at the cost of a slightly conservative estimate of overall effect size."
+    }
+    # add the column to custom_model_data
+    custom_model_data$weighted_sd <- as.numeric(weighted_sd)
+    
+    # add to the means
+    custom_model_data$Treatment_mean <- custom_model_data$Treatment_mean + custom_model_data$weighted_sd
+    custom_model_data$Control_mean <- custom_model_data$Control_mean + custom_model_data$weighted_sd
+    
     # Filter the data based on the studies the user wants to run the model on
-    custom_model_data <- data() %>%
+    custom_model_data <- custom_model_data %>%
       dplyr::filter(IUCN_threat_category_1 %in% input$iucn_threat_category) %>%
       #dplyr::filter(Country %in% input$location) %>%
       dplyr::filter(Order %in% input$taxa_order) %>%
@@ -1157,27 +1178,6 @@ server <- function(input, output) {
       expr = {
         
         if(nrow(custom_model_data) > 0){
-          
-          # add small fraction of pooled standard deviation for each study to control and treatment columns
-          weighted_sd <- NULL
-          # extract pooled standard deviations
-          for(paper in custom_model_data$Paper_ID){
-            # weighted averages of control and treatment standard deviations, weighted by sample size
-            control_sd <- weighted.mean(custom_model_data$Control_error[custom_model_data$Paper_ID == paper], custom_model_data$Control_N[custom_model_data$Paper_ID == paper])
-            treatment_sd <- weighted.mean(custom_model_data$Treatment_error[custom_model_data$Paper_ID == paper], custom_model_data$Treatment_N[custom_model_data$Paper_ID == paper])
-            # combine them to one final weighted average, divide it by 14, and add it to a vector where each element corresponds to a row of custom_model_data
-            means <- c(control_sd, treatment_sd)
-            N <- c(sum(custom_model_data$Control_N[custom_model_data$Paper_ID == paper]), sum(custom_model_data$Treatment_N[custom_model_data$Paper_ID == paper]))
-            weighted_sd <- c(weighted_sd, (weighted.mean(means, N))/14) 
-            # 14 is the value for which the mean standard deviation of log response ratios for rows containing zeroes originally is closest to the standard deviation of the unadjusted log response ratios for all the rows with no zeroes originally.
-            # In Gemini's words, "We applied an adjustment that prevented the mathematical explosion of variance in zero-count studies, at the cost of a slightly conservative estimate of overall effect size."
-          }
-          # add the column to custom_model_data
-          custom_model_data$weighted_sd <- as.numeric(weighted_sd)
-          
-          # add to the means
-          custom_model_data$Treatment_mean <- custom_model_data$Treatment_mean + custom_model_data$weighted_sd
-          custom_model_data$Control_mean <- custom_model_data$Control_mean + custom_model_data$weighted_sd
           
           custom_model_data <- custom_model_data %>%
             dplyr::filter(Treatment_error >= 0 & Control_error >= 0)
@@ -1217,6 +1217,31 @@ server <- function(input, output) {
         
         # remove rows with NAs because the model ignores them and they mess up the plot
         custom_model_data <- custom_model_data[!is.na(custom_model_data$yi),]
+        
+        # for figure caption:
+        # summarise threats investigated
+        threat3 <- NULL
+        for(a in custom_model_data$Observation_ID){
+          if(!is.na(custom_model_data$IUCN_threat_category_3[custom_model_data$Observation_ID == a])){
+            threat3 <- c(threat3, custom_model_data$IUCN_threat_category_3[custom_model_data$Observation_ID == a])
+          } else {
+            threat3 <- c(threat3, custom_model_data$IUCN_threat_category_2[custom_model_data$Observation_ID == a])
+          }
+        }
+        threat3 <- unique(threat3)
+        threat3 <- gsub("&", "and", threat3)
+        threat3 <- removeNumbers(threat3)
+        threat3 <- gsub(". ", "", threat3, fixed = TRUE) # removes space after numbers
+        threat3 <- gsub(".", "", threat3, fixed = TRUE)
+        if("Nutrient loads" %in% threat3){
+          threat3 <- gsub("Nutrient loads", "Nutrient loads (fertiliser/nutrient contamination)", threat3, fixed = TRUE)
+        }
+        if("Named species" %in% threat3){
+          threat3 <- gsub("Named species", "Named species (i.e. invasive species)", threat3, fixed = TRUE)
+        }
+        threat3 <- paste(threat3, collapse = ", and ")
+        threat3 <- paste0(threat3, ".")
+        output$threat3 <- renderText(threat3)
         
         # Run metafor model
         custom_meta_model <- metafor::rma.mv(yi, vi, # effect sizes and corresponding variances
@@ -1365,8 +1390,8 @@ server <- function(input, output) {
             paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on insect biodiversity. The overall effect size is indicated by the diamond -
           the centre of the diamond on the x-axis represents the point estimate,
           with its width representing the 95% confidence interval. The specific ",
-            paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. <br><br>",
-            "The overall effect size of ", paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on biodiversity for ",
+            paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. The IUCN subcategories addressed here are:", shiny::isolate(textOutput("threat3")), 
+            "<br><br>The overall effect size of ", paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on biodiversity for ",
             paste(shiny::isolate(input$taxa_order), collapse = ", "), 
             #" in ", paste(shiny::isolate(input$location), collapse = ", "), 
             " measured with ",
@@ -1390,8 +1415,8 @@ server <- function(input, output) {
             paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on insect biodiversity. The overall effect size is indicated by the diamond -
           the centre of the diamond on the x-axis represents the point estimate,
           with its width representing the 95% confidence interval. The specific ",
-            paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. <br><br>",
-            "The overall effect size of ", paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on biodiversity for ",
+            paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. The IUCN subcategories addressed here are:", shiny::isolate(textOutput("threat3")),
+            "<br><br>The overall effect size of ", paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on biodiversity for ",
             paste(shiny::isolate(input$taxa_order), collapse = ", "), 
             #" in ", paste(shiny::isolate(input$location), collapse = ", "), 
             " measured with ",
