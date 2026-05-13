@@ -10,7 +10,7 @@ library(shinydisconnect) # for displaying nice error message if whole shiny app 
 library(shinyjs) # for enabling and disabling download button (useShinyjs hidden)
 library(stringr) # for wrangling text
 library(tm)
-library(webshot) # for downloading map
+# library(webshot) # for downloading map
 
 meta_analysis_outputs <- readRDS("../shiny_data/meta_analysis_outputs.rds")
 insect_orders <- as.character(unique(meta_analysis_outputs$order)) # for the image view
@@ -202,10 +202,15 @@ main_content <- function(){
                               })
                             )),
                           
+                          tags$br(),
                           p(tags$a(href="https://www.royensoc.co.uk/understanding-insects/classification-of-insects/", "Click here to find out more about insect Orders", target="_blank")),
-                          p("Please note that this only uses abundance data with logRR errors at the moment, and only considers abundance data.
-                            Please also note that this does not represent the entirety of scientific knowledge, but only what the GLiTRS project has found and synthesised.
-                            Best and worst case scenarios correspond to upper and lower 95% confidence intervals, respectively, calculated automatically by the function metafor::rma.mv"),
+                          tags$br(),
+                          tags$br(),
+                          p("The information displayed above does not distinguish between insects that are harmful vs. those that are beneficial to humans. For example, the order Lepidoptera (butterflies and moths) includes species 
+                            and moths whose caterpillars are major crop pests, as well as species which are important pollinators. Hence, viewing the effect of a threat on a 
+                            whole insect Order may hide important differences within that Order in terms of the insects' effect on people and ecosystems. Please also note that this does not represent the entirety of scientific knowledge, but only what the GLiTRS project has found and synthesised."),
+                          p("Scientific notes:"),
+                          p("Please note that this only uses abundance data with logRR errors at the moment. Best and worst case scenarios correspond to upper and lower 95% confidence intervals, respectively, calculated automatically by the function metafor::rma.mv"),
                           
                       ),
                       #div(class = "custom-footer", textOutput("attribution"))
@@ -236,7 +241,7 @@ main_content <- function(){
                                    accusations of p-hacking (i.e. manipulating the search strings 
                                    until results meet expectations and/or statistical significance). 
                                    On the contrary, if the results are used only for hypothesis 
-                                   generation, p-hacking may in some circumstances be valid as long as it is declared 
+                                   generation, this may in some circumstances be valid as long as it is declared 
                                    as such (i.e. 'We searched for trends within the GLiTRS Dyameta 
                                    database, to identify fields in which further study might be fruitful')."),
                                  
@@ -268,11 +273,11 @@ main_content <- function(){
                                      
                                      tags$br(),
                                      
-                                     # Add download button for leaflet map
-                                     shiny::downloadButton(outputId = "download_map",
-                                                           label = "Download map (.png)",
-                                                           style='font-size:125%; color: #000; background-color: #eaefec; padding: 12px')
-                                     
+                                   #   # Add download button for leaflet map
+                                   #   shiny::downloadButton(outputId = "download_map",
+                                   #                         label = "Download map (.png)",
+                                   #                         style='font-size:125%; color: #000; background-color: #eaefec; padding: 12px')
+                                   #   
                                    )
                                  ),
                                  
@@ -335,8 +340,8 @@ main_content <- function(){
                                  tags$hr(),
                                  
                                  p("Use this tab to investigate how different anthropogenic threats impact insect biodiversity. These models are multilevel meta-analytic models, run using the ", tags$a(href="https://www.metafor-project.org/doku.php/metafor", "metafor", target = "_blank"), " package. They account for the non-independence
-                  of the data by specifying Paper_ID and Observation_ID as nested random effects. The effect size used to compare biodiversity is the log transformed Ratio Of Means (ROM) (also known as the log response ratio),
-                  which quantifies proportionate change between treatments."),
+                  of the data by specifying Paper_ID and Observation_ID as nested random effects. The effect size used to compare biodiversity is, for some of the data, the log transformed Ratio Of Means (ROM) (also known as the log response ratio), and for the rest, Hedges' D (aka Hedges' g).
+                  The log response ratio quantifies proportionate change between treatments, while Hedges' D quantifies the difference between the means in terms of their standard deviations, with a correction for small sample size."),
                                  
                                  # ******* Add code chunk ui2 here for subgroup-analysis *****************************************************************************
                                  
@@ -352,8 +357,8 @@ main_content <- function(){
                                  
                                  # ******* Add code chunk ui3 here for subgroup-analysis *****************************************************************************
                                  
-                                 p("Based on your research question, below you can filter the data by threat, location, taxonomic order, and biodiversity metric. Once you have made your selections, click 'Run custom model'.
-                                                        The model will then run in real-time, with the results presented as a forest plot."),
+                                 p("Based on your research question, below you can filter the data by threat, taxonomic order, and biodiversity metric. Once you have made your selections, click 'Run custom model'.
+                                                        The model will then run in real-time (this may take a while), with the results presented as a forest plot."),
                                  
                                  p("Note that users should be conscious of the dangers of multiple testing, as described ", tags$a(href="https://drmattg.github.io/Uncertain_Ecologist/Dynamic_Meta_analysis.html", "here", target = "_blank"), " by Dr Matthew J Grainger (who is unaffiliated with this project), when using GLiTRS Dynameta to run dynamic meta-analyses. Please see our publication in SoftwareX, entitled 'Dynameta: a dynamic platform for ecological meta-analyses in R Shiny', for more details."),
                                  
@@ -538,11 +543,11 @@ main_content <- function(){
                       
                       tags$hr(),
                       
-                      p("First, it's important that our meta-analyses are carried out in line with our protocol, preregistered on the Open Science Framework (OSF)", tags$a(href="https://osf.io/mw7xq/?view_only=", "here", target = "_blank"), ". In the OSF project you'll find the following: 1) a detailed guidance document; 2) a skeleton spreadheet to complete; 3) a skeleton protocol to complete; 4) a spot check spreadsheet to complete; and 5) a set of prior contributor protocols."),
+                      p("All meta-analyses performed by the GLiTRS team were carried out in line with our protocol, preregistered on the Open Science Framework (OSF)", tags$a(href="https://osf.io/mw7xq/?view_only=", "here", target = "_blank"), ". The OSF project contains: 1) a detailed guidance document; 2) a skeleton spreadheet to complete; 3) a skeleton protocol to complete; 4) a spot check spreadsheet to complete; and 5) a set of prior contributor protocols."),
                       
                       
                       p("Please refer to and follow the guidance developed by communities of practice
-                       when conducting evidence syntheses:",
+                       when conducting your own evidence syntheses using this resource:",
                            tags$ul(
                              tags$li(tags$a(href="https://environmentalevidence.org/", "Collaboration for Environmental Evidence (CEE)", target = "_blank"),
                                      " - For conducting environmental evidence syntheses. See ",
@@ -568,8 +573,19 @@ main_content <- function(){
                              tags$li(tags$a(href="http://www.metafor-project.org/doku.php/tips", "The metafor package tips and notes", target = "_blank"))
                            )),
                       
-                      tags$br()
+                      tags$br(),
                       
+                      p("The data used here come from seven meta-analyses, four from pre-existing literature and three which were carried out by GLiTRS contributors."),
+                      p("Prior meta-analyses:"),
+                      tags$li("Gallego-Zamorano, J., M. M. de Jonge, K. Runge, et al. 2023. “Context-Dependent Responses of Terrestrial Invertebrates to Anthropogenic Nitrogen Enrichment: A Meta-Analysis.” Global Change Biology 29, no. 14: 4161–4173. ", tags$a(href = "https://doi.org/10.1111/gcb.16717", "https://doi.org/10.1111/gcb.16717", target = "_blank")),
+                      tags$li("Liang, H., Y. D. He, P. Theodorou, and C. F. Yang. 2023. “The Effects of Urbanization on Pollinators and Pollination: A Meta-Analysis.” Ecology Letters 26, no. 9: 1629–1642. ", tags$a(href = "https://doi.org/10.1111/ele.14277", "https://doi.org/10.1111/ele.14277", target = "_blank")),
+                      tags$li("Nessel, M. P., T. Konnovitch, G. Q. Romero, and A. L. González. 2023. “Decline of Insects and Arachnids Driven by Nutrient Enrichment: A Meta-Analysis.” Ecology 104, no. 2: e3897. ", tags$a(href = "https://doi.org/10.1002/ecy.3897", "https://doi.org/10.1002/ecy.3897", target = "_blank")),
+                      tags$li("Wang, J., C. Ding, J. Heino, et al. 2020. “What Explains the Variation in Dam Impacts on Riverine Macroinvertebrates? A Global Quantitative Synthesis.” Environmental Research Letters 15, no. 12: 124028. ", tags$a(href = "https://doi.org/10.1088/1748-9326/abc4fc", "https://doi.org/10.1088/1748-9326/abc4fc", target = "_blank"), tags$br(), "Please note that we have only used a small subset of data from this paper. This is because we found a bug in the function they used to impute the standard deviation where it was not found in the literature, so we have only used data on which they did not use this function."),
+                      tags$br(),
+                      p("GLiTRS meta-analyses:"),
+                      tags$li("Barnes, L. A., Wenban‐Smith, E., Skinner, G., Dicks, L. V., Millard, J., & Bladon, A. J. (2025). Differing Impacts of Livestock Farming and Ranching on Aquatic Insect Biodiversity: A Global Meta‐Analysis. Global Change Biology, 31(9). ", tags$a(href = "https://doi.org/10.1111/gcb.70513", "https://doi.org/10.1111/gcb.70513", target = "_blank")),
+                      tags$li("Skinner, G. L. V., Cooke, R., Roy, H. E., Isaac, N. J. B., Outhwaite, C. L., Rodger, J., & Millard, J. (2026). Meta-analysis reveals negative but highly variable impacts of invasive alien species across terrestrial insect orders. Nature Communications, 17(1).", tags$a(href = "https://doi.org/10.1038/s41467-025-67925-9", "https://doi.org/10.1038/s41467-025-67925-9", target = "_blank")),
+                      tags$li("And one dataset published in Skinner, G., Cooke, R., Keum, J., Purvis, A., Raw, C., Woodcock, B. A., & Millard, J. (2023). Dynameta: A dynamic platform for ecological meta-analyses in R Shiny. SoftwareX, 23, 101439.", tags$a(href = "https://doi.org/10.1016/j.softx.2023.101439", "https://doi.org/10.1016/j.softx.2023.101439", target = "_blank"))
       )  # close resources tab
       
       
