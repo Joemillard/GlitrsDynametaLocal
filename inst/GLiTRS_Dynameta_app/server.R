@@ -1128,8 +1128,30 @@ server <- function(input, output) {
       shiny::need(input$biodiversity_metric_category != "", "Please select at least one biodiveristy metric category.")
     )
     
+    # add small fraction of pooled standard deviation for each study to control and treatment columns
+    custom_model_data <- data()
+    weighted_sd <- NULL
+    # extract pooled standard deviations
+    for(paper in custom_model_data$Paper_ID){
+      # weighted averages of control and treatment standard deviations, weighted by sample size
+      control_sd <- weighted.mean(custom_model_data$Control_error[custom_model_data$Paper_ID == paper], custom_model_data$Control_N[custom_model_data$Paper_ID == paper])
+      treatment_sd <- weighted.mean(custom_model_data$Treatment_error[custom_model_data$Paper_ID == paper], custom_model_data$Treatment_N[custom_model_data$Paper_ID == paper])
+      # combine them to one final weighted average, divide it by 14, and add it to a vector where each element corresponds to a row of custom_model_data
+      means <- c(control_sd, treatment_sd)
+      N <- c(sum(custom_model_data$Control_N[custom_model_data$Paper_ID == paper]), sum(custom_model_data$Treatment_N[custom_model_data$Paper_ID == paper]))
+      weighted_sd <- c(weighted_sd, (weighted.mean(means, N))/14) 
+      # 14 is the value for which the mean standard deviation of log response ratios for rows containing zeroes originally is closest to the standard deviation of the unadjusted log response ratios for all the rows with no zeroes originally.
+      # In Gemini's words, "We applied an adjustment that prevented the mathematical explosion of variance in zero-count studies, at the cost of a slightly conservative estimate of overall effect size."
+    }
+    # add the column to custom_model_data
+    custom_model_data$weighted_sd <- as.numeric(weighted_sd)
+    
+    # add to the means
+    custom_model_data$Treatment_mean <- custom_model_data$Treatment_mean + custom_model_data$weighted_sd
+    custom_model_data$Control_mean <- custom_model_data$Control_mean + custom_model_data$weighted_sd
+    
     # Filter the data based on the studies the user wants to run the model on
-    custom_model_data <- data() %>%
+    custom_model_data <- custom_model_data %>%
       dplyr::filter(IUCN_threat_category_1 %in% input$iucn_threat_category) %>%
       #dplyr::filter(Country %in% input$location) %>%
       dplyr::filter(Order %in% input$taxa_order) %>%
@@ -1156,27 +1178,6 @@ server <- function(input, output) {
       expr = {
         
         if(nrow(custom_model_data) > 0){
-          
-          # add small fraction of pooled standard deviation for each study to control and treatment columns
-          weighted_sd <- NULL
-          # extract pooled standard deviations
-          for(paper in custom_model_data$Paper_ID){
-            # weighted averages of control and treatment standard deviations, weighted by sample size
-            control_sd <- weighted.mean(custom_model_data$Control_error[custom_model_data$Paper_ID == paper], custom_model_data$Control_N[custom_model_data$Paper_ID == paper])
-            treatment_sd <- weighted.mean(custom_model_data$Treatment_error[custom_model_data$Paper_ID == paper], custom_model_data$Treatment_N[custom_model_data$Paper_ID == paper])
-            # combine them to one final weighted average, divide it by 14, and add it to a vector where each element corresponds to a row of custom_model_data
-            means <- c(control_sd, treatment_sd)
-            N <- c(sum(custom_model_data$Control_N[custom_model_data$Paper_ID == paper]), sum(custom_model_data$Treatment_N[custom_model_data$Paper_ID == paper]))
-            weighted_sd <- c(weighted_sd, (weighted.mean(means, N))/14) 
-            # 14 is the value for which the mean standard deviation of log response ratios for rows containing zeroes originally is closest to the standard deviation of the unadjusted log response ratios for all the rows with no zeroes originally.
-            # In Gemini's words, "We applied an adjustment that prevented the mathematical explosion of variance in zero-count studies, at the cost of a slightly conservative estimate of overall effect size."
-          }
-          # add the column to custom_model_data
-          custom_model_data$weighted_sd <- as.numeric(weighted_sd)
-          
-          # add to the means
-          custom_model_data$Treatment_mean <- custom_model_data$Treatment_mean + custom_model_data$weighted_sd
-          custom_model_data$Control_mean <- custom_model_data$Control_mean + custom_model_data$weighted_sd
           
           custom_model_data <- custom_model_data %>%
             dplyr::filter(Treatment_error >= 0 & Control_error >= 0)

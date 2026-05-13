@@ -140,6 +140,8 @@ summarise_effects <- function(prior_data, current_data, summarise_type){
           
           threat3 <- paste(unique(custom_model_data$IUCN_threat_category_3), collapse = "/")
           
+          custom_model_data <- custom_model_data[!is.na(custom_model_data$yi),]
+          
           # Run metafor model
           custom_meta_model <- metafor::rma.mv(yi, vi, # effect sizes and corresponding variances
                                                random = ~ 1 | Paper_ID/Observation_ID, # specify random-effects structure of model
@@ -184,6 +186,7 @@ summarise_effects <- function(prior_data, current_data, summarise_type){
     
     data <- data[-1,]
     rownames(data) <- NULL
+    
     return(data)
   } else if(summarise_type == "all"){
     data <- data.frame()
