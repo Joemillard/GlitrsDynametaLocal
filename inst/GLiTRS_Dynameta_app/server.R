@@ -813,7 +813,7 @@ server <- function(input, output) {
         paste0("Overall effect on insects: <b>", percent, "% more insects</b> in sites with ", threat_info)
       }
     } else {
-      paste0("Overall effect on insects: No effect")
+      paste0("Overall effect on insects: No significant effect")
     }
   })
   

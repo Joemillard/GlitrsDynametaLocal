@@ -206,6 +206,7 @@ main_content <- function(){
                           p(tags$a(href="https://www.royensoc.co.uk/understanding-insects/classification-of-insects/", "Click here to find out more about insect Orders", target="_blank")),
                           tags$br(),
                           tags$br(),
+                          p("The colour of the icons represents how they are affected by the threat: red indicates a decrease and blue indicates an increase in sites with the threat compared to sites without. Grey insect orders are not significantly affected by the threat."),
                           p("The information displayed above does not distinguish between insects that are harmful vs. those that are beneficial to humans. For example, the order Lepidoptera (butterflies and moths) includes species 
                             and moths whose caterpillars are major crop pests, as well as species which are important pollinators. Hence, viewing the effect of a threat on a 
                             whole insect Order may hide important differences within that Order in terms of the insects' effect on people and ecosystems. Please also note that this does not represent the entirety of scientific knowledge, but only what the GLiTRS project has found and synthesised."),
