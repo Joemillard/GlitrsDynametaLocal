@@ -1243,6 +1243,9 @@ server <- function(input, output) {
         threat3 <- paste0(threat3, ".")
         output$threat3 <- renderText(threat3)
         
+        output$orders_with_data <- renderText(paste(unique(custom_model_data$Order), collapse = ", "))
+        output$metrics_with_data <- renderText(paste(unique(custom_model_data$Biodiversity_metric), collapse = ", "))
+        
         # Run metafor model
         custom_meta_model <- metafor::rma.mv(yi, vi, # effect sizes and corresponding variances
                                              random = ~ 1 | Paper_ID/Observation_ID, # specify random-effects structure of model
@@ -1390,12 +1393,12 @@ server <- function(input, output) {
             paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on insect biodiversity. The overall effect size is indicated by the diamond -
           the centre of the diamond on the x-axis represents the point estimate,
           with its width representing the 95% confidence interval. The specific ",
-            paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. The IUCN subcategories addressed here are:", shiny::isolate(textOutput("threat3")), 
+            paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. The IUCN subcategories addressed here are: ", shiny::isolate(textOutput("threat3", inline = TRUE)), 
             "<br><br>The overall effect size of ", paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on biodiversity for ",
-            paste(shiny::isolate(input$taxa_order), collapse = ", "), 
+            shiny::isolate(textOutput("orders_with_data", inline = TRUE)), 
             #" in ", paste(shiny::isolate(input$location), collapse = ", "), 
             " measured with ",
-            paste(shiny::isolate(input$biodiversity_metric_category), collapse = ", "), " as the biodiversity metric is ", round(stats::coef(custom_model()), digits = 2),
+            shiny::isolate(textOutput("metrics_with_data", inline = TRUE)), " as the biodiversity metric is ", round(stats::coef(custom_model()), digits = 2),
             ". This equates to a percentage change of ", percentage_change, "%", " [", ci_lb, "%, ", ci_ub, "%]. <br><br>",
             "The", "<i> I² </i>", "statistic for the meta-analysis is ", i2, "%. This describes the percentage of total variance that is due to heterogeneity (variability among studies), and not due to chance. <br><br>",
             sep = "")
@@ -1415,12 +1418,12 @@ server <- function(input, output) {
             paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on insect biodiversity. The overall effect size is indicated by the diamond -
           the centre of the diamond on the x-axis represents the point estimate,
           with its width representing the 95% confidence interval. The specific ",
-            paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. The IUCN subcategories addressed here are:", shiny::isolate(textOutput("threat3")),
+            paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. The IUCN subcategories addressed here are:", shiny::isolate(textOutput("threat3", inline = TRUE)),
             "<br><br>The overall effect size of ", paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on biodiversity for ",
-            paste(shiny::isolate(input$taxa_order), collapse = ", "), 
+            shiny::isolate(textOutput("orders_with_data", inline = TRUE)), 
             #" in ", paste(shiny::isolate(input$location), collapse = ", "), 
             " measured with ",
-            paste(shiny::isolate(input$biodiversity_metric_category), collapse = ", "), " as the biodiversity metric is ", round(stats::coef(custom_model()), digits = 2),
+            shiny::isolate(textOutput("metrics_with_data", inline = TRUE)), " as the biodiversity metric is ", round(stats::coef(custom_model()), digits = 2),
             " [", ci_lb, ", ", ci_ub, 
             "]. Percentage change cannot be calculated from Hedges' D, but conventional thresholds are that 0.2 is a small effect, 0.5 is a medium effect and 0.8 is a large effect. <br><br>The", "<i> I² </i>", "statistic for the meta-analysis is ", i2, "%. This describes the percentage of total variance that is due to heterogeneity (variability among studies), and not due to chance. <br><br>",
             sep = "")
