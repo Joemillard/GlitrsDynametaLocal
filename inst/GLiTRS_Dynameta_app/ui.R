@@ -89,73 +89,73 @@ main_content <- function(){
                       ),
                       
                       # ----------------------------------------------------------------------------------------------------------------------
-                      
-                      # Pre-amble
-                      p(h4(tags$b("Introduction"))),
-                      
-                      tags$hr(),
-                      
-                      p(tags$a(href="https://glitrs.ceh.ac.uk/", "GLiTRS", target = "_blank"), "Dynameta is designed for the ingestion and interactive meta-analyses of insect biodiversity effect sizes, oriented around the effect of anthropogenic threats
+                      column(10, offset = 1,
+                             # Pre-amble
+                             p(h4(tags$b("Introduction"))),
+                             
+                             tags$hr(),
+                             
+                             p(tags$a(href="https://glitrs.ceh.ac.uk/", "GLiTRS", target = "_blank"), "Dynameta is designed for the ingestion and interactive meta-analyses of insect biodiversity effect sizes, oriented around the effect of anthropogenic threats
                   (based on the ", tags$a(href="https://www.iucnredlist.org/resources/threat-classification-scheme", "IUCN threats classification scheme", .noWS = "outside", target = "_blank"),
-                           ") on biodiversity. If you encounter any issues or bugs while using GLiTRS Dynameta, please raise this with Joe Millard."),
-                      
-                      p("The platform is split into 5 main pages:"),
-                      
-                      tags$ol(
-                        tags$li("Use this 'Introduction' to familiarise yourself with the site and its layout."),
-                        tags$li("Use 'Summary' to explore our findings in an engaging way."),
-                        tags$li("Use 'Explore data' to access the data behind the project, visualise its geographic distribution, and run custom meta-analytic models investigating the effect of anthropogenic threats on insect biodiversity."),
-                        tags$li("Use 'Read more' for any documentation on the appropriate approach for carrying out a GLiTRS meta-analysis.")
-                        
-          
-                      ),
-                      
-                      tags$hr(),
-                      
-                      # ----------------------------------------------------------------------------------------------------------------------
-                      
-                      ### User choice of what data to analyse - sample or their own
-                      
-                      # ----------------------------------------------------------------------------------------------------------------------
-                      
-                      
-                      # Citation
-                        p("For any publications using GLiTRS Dynameta, please cite both our original software article and the database publication:"),
-                        p("- Millard, J., Skinner, G., Bladon, A. J., Cooke, R., Outhwaite, C. L., Rodger, J. G., Barnes, L. A., Isip, J., Keum, J., Raw, C., Wenban-Smith, E., Dicks, L. V., Hui, C., Jones, J. I., Woodcock, B., Isaac, N. J., & Purvis, A. (2025). A Multithreat Meta‐Analytic Database for Understanding Insect Biodiversity Change. Diversity and Distributions. DOI:",
-                           tags$a(href = "https://doi.org/10.1111/ddi.70025", "https://doi.org/10.1111/ddi.70025", target = "_blank")),
-                        p("- Skinner, G., Cooke, R., Junghyuk, K., Purvis, A., Raw, C., Woodcock, B.A., Millard, J. (2023). Dynameta: a dynamic platform for ecological meta-analyses in R Shiny. SoftwareX. DOI:",
-                           tags$a(href = "https://doi.org/10.1016/j.softx.2023.101439", "https://doi.org/10.1016/j.softx.2023.101439", target = "_blank"))
-                      # ----------------------------------------------------------------------------------------------------------------------
-                      
+                               ") on biodiversity. If you encounter any issues or bugs while using GLiTRS Dynameta, please raise this with Joe Millard."),
+                             
+                             p("The platform is split into 5 main pages:"),
+                             
+                             tags$ol(
+                               tags$li("Use this 'Introduction' to familiarise yourself with the site and its layout."),
+                               tags$li("Use 'Summary' to explore our findings in an engaging way."),
+                               tags$li("Use 'Explore data' to access the data behind the project, visualise its geographic distribution, and run custom meta-analytic models investigating the effect of anthropogenic threats on insect biodiversity."),
+                               tags$li("Use 'Read more' for any documentation on the appropriate approach for carrying out a GLiTRS meta-analysis.")
+                               
+                               
+                             ),
+                             
+                             tags$hr(),
+                             
+                             # ----------------------------------------------------------------------------------------------------------------------
+                             
+                             ### User choice of what data to analyse - sample or their own
+                             
+                             # ----------------------------------------------------------------------------------------------------------------------
+                             
+                             
+                             # Citation
+                             p("For any publications using GLiTRS Dynameta, please cite both our original software article and the database publication:"),
+                             p("- Millard, J., Skinner, G., Bladon, A. J., Cooke, R., Outhwaite, C. L., Rodger, J. G., Barnes, L. A., Isip, J., Keum, J., Raw, C., Wenban-Smith, E., Dicks, L. V., Hui, C., Jones, J. I., Woodcock, B., Isaac, N. J., & Purvis, A. (2025). A Multithreat Meta‐Analytic Database for Understanding Insect Biodiversity Change. Diversity and Distributions. DOI:",
+                               tags$a(href = "https://doi.org/10.1111/ddi.70025", "https://doi.org/10.1111/ddi.70025", target = "_blank")),
+                             p("- Skinner, G., Cooke, R., Junghyuk, K., Purvis, A., Raw, C., Woodcock, B.A., Millard, J. (2023). Dynameta: a dynamic platform for ecological meta-analyses in R Shiny. SoftwareX. DOI:",
+                               tags$a(href = "https://doi.org/10.1016/j.softx.2023.101439", "https://doi.org/10.1016/j.softx.2023.101439", target = "_blank"))
+                             # ----------------------------------------------------------------------------------------------------------------------
+                      )                
       ),
       
       # ==============================================================
       # Public engagement tab
       # ==============================================================
       shiny::tabPanel("Summary",
-                      
-                      # Title to show at top of tab
-                      p(h4(tags$b("How do human activities affect insects?"))),
-                      
-                      
-                      #tags$br(),
-                      
-                      # The container that gets the background
-                      div(id = "tab-content-area",
-                          
-                          selectInput("chosen_threat",
-                                      label = "Choose a threat:",
-                                      choices = c("2 Agriculture and Aquaculture", "8 Invasive & other problematic species, genes & diseases", "9 Pollution"),
-                                      selected = NULL),
-                          
-                          p(htmlOutput("threat_explanation")),
-                          
-                          h5(htmlOutput("overall_effect")),
-                          
-                          p(""),
-                          
-                          p("Click the insects below to find out how they are each affected by human activities."),
-                          
+                      column(10, offset = 1,
+                             # Title to show at top of tab
+                             p(h4(tags$b("How do human activities affect insects?"))),
+                             
+                             
+                             #tags$br(),
+                             
+                             # The container that gets the background
+                             div(id = "tab-content-area",
+                                 
+                                 selectInput("chosen_threat",
+                                             label = "Choose a threat:",
+                                             choices = c("2 Agriculture and Aquaculture", "8 Invasive & other problematic species, genes & diseases", "9 Pollution"),
+                                             selected = NULL),
+                                 
+                                 p(htmlOutput("threat_explanation")),
+                                 
+                                 h5(htmlOutput("overall_effect")),
+                                 
+                                 p(""),
+                                 
+                                 p("Click the insects below to find out how they are each affected by human activities."),
+                             ),
                           
                           fluidRow(
                             tagList(
@@ -206,6 +206,7 @@ main_content <- function(){
                           p(tags$a(href="https://www.royensoc.co.uk/understanding-insects/classification-of-insects/", "Click here to find out more about insect Orders", target="_blank")),
                           tags$br(),
                           tags$br(),
+                          p("The colour of the icons represents how they are affected by the threat: red indicates a decrease and blue indicates an increase in sites with the threat compared to sites without. Grey insect orders are not significantly affected by the threat."),
                           p("The information displayed above does not distinguish between insects that are harmful vs. those that are beneficial to humans. For example, the order Lepidoptera (butterflies and moths) includes species 
                             and moths whose caterpillars are major crop pests, as well as species which are important pollinators. Hence, viewing the effect of a threat on a 
                             whole insect Order may hide important differences within that Order in terms of the insects' effect on people and ecosystems. Please also note that this does not represent the entirety of scientific knowledge, but only what the GLiTRS project has found and synthesised."),
@@ -225,6 +226,7 @@ main_content <- function(){
       
       navbarMenu("Explore data",
                  shiny::tabPanel("Overview",
+                             column(10,offset = 1,
                                  p(h4(tags$b("Overview"))),
                                  
                                  tags$hr(),
@@ -287,8 +289,10 @@ main_content <- function(){
                                  h5(shiny::icon("github", lib = "font-awesome", "fa-2x"), # add-in github icon
                                       tags$a(href="https://github.com/gls21/Dynameta", "View original Dynameta source code.", target = "_blank"),
                                       "")
+                             )
                  ),# close overview tab
                  tabPanel("View effect sizes",
+                      column(10, offset = 1,
                           tags$head(
                             tags$style(HTML(".dataTables_scrollHead, .dataTables_scrollBody { font-size: 14px; }"))
                           ),
@@ -327,8 +331,12 @@ main_content <- function(){
                           tags$br(),
                           tags$br()
                           
+                      )
+                          
                  ), # close view data tab
                  shiny::tabPanel("Run meta-analyses",
+                             
+                             column(10, offset = 1,
                                  
                                  # ******* Add code chunk ui1 here for subgroup-analysis *****************************************************************************
                                  
@@ -528,7 +536,8 @@ main_content <- function(){
                                  tags$br()
                                  
                                  # ******* Add code chunk ui4 here for subgroup-analysis *****************************************************************************
-                                 
+                             )
+                                                 
                  ), # close modelling tab
       ),
      
@@ -537,6 +546,8 @@ main_content <- function(){
       # ==============================================================
       
       shiny::tabPanel("Read more",
+                      
+                  column(10, offset = 1,
                       
                       # Text to explain what the tab is for
                       p(h4(tags$b("Read more"))),
@@ -585,7 +596,11 @@ main_content <- function(){
                       p("GLiTRS meta-analyses:"),
                       tags$li("Barnes, L. A., Wenban‐Smith, E., Skinner, G., Dicks, L. V., Millard, J., & Bladon, A. J. (2025). Differing Impacts of Livestock Farming and Ranching on Aquatic Insect Biodiversity: A Global Meta‐Analysis. Global Change Biology, 31(9). ", tags$a(href = "https://doi.org/10.1111/gcb.70513", "https://doi.org/10.1111/gcb.70513", target = "_blank")),
                       tags$li("Skinner, G. L. V., Cooke, R., Roy, H. E., Isaac, N. J. B., Outhwaite, C. L., Rodger, J., & Millard, J. (2026). Meta-analysis reveals negative but highly variable impacts of invasive alien species across terrestrial insect orders. Nature Communications, 17(1).", tags$a(href = "https://doi.org/10.1038/s41467-025-67925-9", "https://doi.org/10.1038/s41467-025-67925-9", target = "_blank")),
-                      tags$li("And one dataset published in Skinner, G., Cooke, R., Keum, J., Purvis, A., Raw, C., Woodcock, B. A., & Millard, J. (2023). Dynameta: A dynamic platform for ecological meta-analyses in R Shiny. SoftwareX, 23, 101439.", tags$a(href = "https://doi.org/10.1016/j.softx.2023.101439", "https://doi.org/10.1016/j.softx.2023.101439", target = "_blank"))
+                      tags$li("And one dataset published in Skinner, G., Cooke, R., Keum, J., Purvis, A., Raw, C., Woodcock, B. A., & Millard, J. (2023). Dynameta: A dynamic platform for ecological meta-analyses in R Shiny. SoftwareX, 23, 101439.", tags$a(href = "https://doi.org/10.1016/j.softx.2023.101439", "https://doi.org/10.1016/j.softx.2023.101439", target = "_blank")),
+                      tags$br(),
+                      tags$br()
+                  )
+                      
       )  # close resources tab
       
       

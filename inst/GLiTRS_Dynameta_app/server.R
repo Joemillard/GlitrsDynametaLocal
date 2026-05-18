@@ -724,7 +724,7 @@ server <- function(input, output) {
   # ==============================================================
   # Public engagement tab
   # ==============================================================
-  
+  # (not used)
   output$background <- renderUI({
     img_file <- switch(input$chosen_threat,
                        "2 Agriculture and Aquaculture" = "Evelyn Simak Red tractor Wikimedia 0.65.jpg", # numbers denote transparency (1 = fully transparent), achieved via pasting the image into powerpoint (with image compression turned off) and changing the transparency then saving it
@@ -782,7 +782,7 @@ server <- function(input, output) {
                                                     or human infrastructure. Invasive non-native species may eat native 
                                                     species or compete directly with them for food, or they may reduce 
                                                     the habitat quality in many other ways."))
-  
+  # (not used)
   output$attribution <- renderText({img_file <- paste0("Background image: ", switch(input$chosen_threat,
                                                                                     "2 Agriculture and Aquaculture" = "Evelyn Simak / Red tractor / CC BY-SA 2.0",
                                                                                     "9 Pollution" = "Welp.sk / Air pollution / CC BY-SA 3.0",
@@ -813,7 +813,7 @@ server <- function(input, output) {
         paste0("Overall effect on insects: <b>", percent, "% more insects</b> in sites with ", threat_info)
       }
     } else {
-      paste0("Overall effect on insects: No effect")
+      paste0("Overall effect on insects: No significant effect")
     }
   })
   
@@ -1230,9 +1230,9 @@ server <- function(input, output) {
         }
         threat3 <- unique(threat3)
         threat3 <- gsub("&", "and", threat3)
-        threat3 <- removeNumbers(threat3)
-        threat3 <- gsub(". ", "", threat3, fixed = TRUE) # removes space after numbers
-        threat3 <- gsub(".", "", threat3, fixed = TRUE)
+        # threat3 <- removeNumbers(threat3)
+        # threat3 <- gsub(". ", "", threat3, fixed = TRUE) # removes space after numbers
+        # threat3 <- gsub(".", "", threat3, fixed = TRUE)
         if("Nutrient loads" %in% threat3){
           threat3 <- gsub("Nutrient loads", "Nutrient loads (fertiliser/nutrient contamination)", threat3, fixed = TRUE)
         }
@@ -1242,6 +1242,9 @@ server <- function(input, output) {
         threat3 <- paste(threat3, collapse = ", and ")
         threat3 <- paste0(threat3, ".")
         output$threat3 <- renderText(threat3)
+        
+        output$orders_with_data <- renderText(paste(unique(custom_model_data$Order), collapse = ", "))
+        output$metrics_with_data <- renderText(paste(unique(custom_model_data$Biodiversity_metric), collapse = ", "))
         
         # Run metafor model
         custom_meta_model <- metafor::rma.mv(yi, vi, # effect sizes and corresponding variances
@@ -1390,12 +1393,12 @@ server <- function(input, output) {
             paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on insect biodiversity. The overall effect size is indicated by the diamond -
           the centre of the diamond on the x-axis represents the point estimate,
           with its width representing the 95% confidence interval. The specific ",
-            paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. The IUCN subcategories addressed here are:", shiny::isolate(textOutput("threat3")), 
+            paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. The IUCN subcategories addressed here are: ", shiny::isolate(textOutput("threat3", inline = TRUE)), 
             "<br><br>The overall effect size of ", paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on biodiversity for ",
-            paste(shiny::isolate(input$taxa_order), collapse = ", "), 
+            shiny::isolate(textOutput("orders_with_data", inline = TRUE)), 
             #" in ", paste(shiny::isolate(input$location), collapse = ", "), 
             " measured with ",
-            paste(shiny::isolate(input$biodiversity_metric_category), collapse = ", "), " as the biodiversity metric is ", round(stats::coef(custom_model()), digits = 2),
+            shiny::isolate(textOutput("metrics_with_data", inline = TRUE)), " as the biodiversity metric is ", round(stats::coef(custom_model()), digits = 2),
             ". This equates to a percentage change of ", percentage_change, "%", " [", ci_lb, "%, ", ci_ub, "%]. <br><br>",
             "The", "<i> I² </i>", "statistic for the meta-analysis is ", i2, "%. This describes the percentage of total variance that is due to heterogeneity (variability among studies), and not due to chance. <br><br>",
             sep = "")
@@ -1415,12 +1418,12 @@ server <- function(input, output) {
             paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on insect biodiversity. The overall effect size is indicated by the diamond -
           the centre of the diamond on the x-axis represents the point estimate,
           with its width representing the 95% confidence interval. The specific ",
-            paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. The IUCN subcategories addressed here are:", shiny::isolate(textOutput("threat3")),
+            paste(shiny::isolate(input$iucn_threat_category)), " type is listed next to each data point. The IUCN subcategories addressed here are: ", shiny::isolate(textOutput("threat3", inline = TRUE)),
             "<br><br>The overall effect size of ", paste(shiny::isolate(input$iucn_threat_category), collapse = ", "), " on biodiversity for ",
-            paste(shiny::isolate(input$taxa_order), collapse = ", "), 
+            shiny::isolate(textOutput("orders_with_data", inline = TRUE)), 
             #" in ", paste(shiny::isolate(input$location), collapse = ", "), 
             " measured with ",
-            paste(shiny::isolate(input$biodiversity_metric_category), collapse = ", "), " as the biodiversity metric is ", round(stats::coef(custom_model()), digits = 2),
+            shiny::isolate(textOutput("metrics_with_data", inline = TRUE)), " as the biodiversity metric is ", round(stats::coef(custom_model()), digits = 2),
             " [", ci_lb, ", ", ci_ub, 
             "]. Percentage change cannot be calculated from Hedges' D, but conventional thresholds are that 0.2 is a small effect, 0.5 is a medium effect and 0.8 is a large effect. <br><br>The", "<i> I² </i>", "statistic for the meta-analysis is ", i2, "%. This describes the percentage of total variance that is due to heterogeneity (variability among studies), and not due to chance. <br><br>",
             sep = "")
